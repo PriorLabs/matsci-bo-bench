@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+# The TabPFN weights are gated: a download needs TABPFN_TOKEN, but a cached
+# checkpoint loads without one. Tests that need the weights skip when neither
+# is available.
+env:
+  TABPFN_MODEL_CACHE_DIR: ${{ github.workspace }}/model_cache
+  HF_HUB_CACHE: ${{ github.workspace }}/hf_cache
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install
+        run: uv sync --locked --extra dev
+
+      - name: Install the Olympus datasets
+        # `olymp` pins TensorFlow 1.15; only its bundled csv and json files are read.
+        run: uv pip install olymp --no-deps
+
+      - name: Restore model caches
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ github.workspace }}/hf_cache
+            ${{ github.workspace }}/model_cache
+          key: model-cache-${{ hashFiles('model_cache/**', 'hf_cache/**') }}
+          restore-keys: model-cache-
+
+      - name: pytest
+        env:
+          TABPFN_TOKEN: ${{ secrets.TABPFN_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run --no-sync pytest tests -q
+
+      - name: Save model caches
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ github.workspace }}/hf_cache
+            ${{ github.workspace }}/model_cache
+          key: model-cache-${{ hashFiles('model_cache/**', 'hf_cache/**') }}

@@ -1,0 +1,17 @@
+# Run outputs. The committed record is reference_results/.
+results/
+*.npz
+*.pt
+
+# Regenerated from reference_results/ by `python -m matbo.visualisation`.
+figures/paper/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+.DS_Store
