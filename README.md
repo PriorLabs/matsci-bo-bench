@@ -16,7 +16,7 @@ source study.
 |---|---|
 | `src/matbo/` | data loaders, surrogates, acquisition rules, the BO loop, analysis and figures |
 | `reference_results/` | the traces behind every number in the paper: which candidate each arm picked at each step, for every campaign and seed |
-| `scripts/` | run arms, merge runs, export traces, check coverage and pool provenance |
+| `scripts/` | run arms locally or on Slurm, merge runs, export traces, check coverage and pool provenance |
 | `data/` | the Liang et al. datasets ([licenses and sources](data/README.md)) |
 | `docs/PROVENANCE.md` | how each candidate pool is built from its source |
 
@@ -79,6 +79,22 @@ uv run python scripts/coverage.py
 
 Runs write to `results/<TAG>/`. `scripts/merge_runs.py` joins runs that were
 split by arm or by seed (`SEED_SLICE=start:stop`).
+
+On a Slurm cluster, `scripts/slurm/` runs the grid as a job array with one task
+per arm and seed range:
+
+```bash
+FAMILIES=liang TAG=liang ./scripts/slurm/submit.sh             # print the plan
+FAMILIES=liang TAG=liang CONFIRM=1 ./scripts/slurm/submit.sh   # submit it
+TAG=liang ./scripts/slurm/collect.sh                           # merge the finished tasks
+```
+
+Set the partition, account and time limit with sbatch's own variables
+(`SBATCH_PARTITION`, `SBATCH_ACCOUNT`, `SBATCH_TIMELIMIT`) or `SBATCH_ARGS`.
+
+Run on CPU (`DEVICE=cpu`; the Slurm scripts set it). The recorded traces were
+computed on CPU. On a GPU, small floating-point differences change which
+candidate an arm picks, and the run follows a different path.
 
 A re-run picks the same candidates as the recorded trace when the numerics
 match. Most cells we re-ran on a different machine matched exactly. Some
