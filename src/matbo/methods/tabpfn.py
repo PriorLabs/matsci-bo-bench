@@ -21,7 +21,7 @@ from matbo.methods.tabpfn_points import posterior_mean_sd, score_candidates
 
 @dataclass
 class TabPFNSurrogate:
-    """TabPFN's predictive distribution over the pool, at the library defaults."""
+    """TabPFN-3's predictive distribution over the pool, at the library defaults."""
 
     n_estimators: int = 8
     device: str = "cpu"
@@ -29,8 +29,12 @@ class TabPFNSurrogate:
 
     def _regressor(self, seed: int) -> Any:
         from tabpfn import TabPFNRegressor
+        from tabpfn.constants import ModelVersion
 
-        return TabPFNRegressor(
+        # Pinned to TabPFN-3, the model behind the recorded traces; newer
+        # tabpfn releases default to a different checkpoint.
+        return TabPFNRegressor.create_default_for_version(
+            ModelVersion.V3,
             n_estimators=self.n_estimators,
             device=self.device,
             random_state=seed,

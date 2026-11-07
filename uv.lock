@@ -2605,7 +2605,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.7" },
     { name = "scipy", specifier = ">=1.15" },
     { name = "tabicl", specifier = ">=2.1" },
-    { name = "tabpfn", specifier = ">=8.1" },
+    { name = "tabpfn", specifier = "==8.2.0" },
     { name = "torch", specifier = ">=2.2" },
 ]
 provides-extras = ["dev"]

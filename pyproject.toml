@@ -17,7 +17,7 @@ dependencies = [
     "torch>=2.2",
     "botorch>=0.16",
     "gpytorch>=1.15",
-    "tabpfn>=8.1",
+    "tabpfn==8.2.0",
     "tabicl>=2.1",
     "catboost>=1.2",
 ]

@@ -4,7 +4,7 @@ Code and results for the paper by Klemens Flöge, Simon Bing, Leo Grinsztajn,
 Eliott Kalfon, Lennart Purucker, Noah Hollmann and Frank Hutter (AI4Mat
 workshop, NeurIPS 2026).
 
-We compare tabular foundation models (TabPFN, TabICL) with Gaussian processes,
+We compare tabular foundation models (TabPFN-3, TabICL) with Gaussian processes,
 random forests and CatBoost as surrogates for pool-based Bayesian optimization
 on real experimental campaigns. Each round, the optimizer picks the next
 candidate to measure from a finite pool of settings that were measured in the
@@ -42,8 +42,10 @@ uv sync --locked --extra dev
 uv pip install olymp --no-deps   # the Olympus datasets; see data/README.md
 ```
 
-`uv.lock` pins the library versions the paper's runs used. The TabPFN weights
-are gated: accept the license once when TabPFN first asks, or set `TABPFN_TOKEN`.
+`uv.lock` pins the library versions the paper's runs used. The `TabPFN` arms
+run TabPFN-3 (`tabpfn` 8.2.0, regressor checkpoint
+`tabpfn-v3-regressor-v3_default.ckpt`); the code selects this model explicitly,
+so a newer default checkpoint cannot change the results. The weights are gated: accept the license once when TabPFN first asks, or set `TABPFN_TOKEN`.
 
 ## Reproduce the figures
 

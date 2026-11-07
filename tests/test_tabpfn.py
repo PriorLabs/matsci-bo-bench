@@ -28,10 +28,10 @@ def _tabpfn_weights_ready() -> bool:
         return True
     try:
         from tabpfn.model_loading import resolve_model_path
-        from tabpfn.settings import settings
+        from tabpfn.constants import ModelVersion
 
         paths, _dirs, _names, _which = resolve_model_path(
-            None, "regressor", version=settings.tabpfn.model_version.value,
+            None, "regressor", version=ModelVersion.V3.value,
         )
     except Exception:  # noqa: BLE001 - any failure means "cannot tell", so skip
         return False
