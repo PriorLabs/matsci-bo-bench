@@ -59,9 +59,9 @@ so a newer default checkpoint cannot change the results. The weights are gated: 
 All figures are computed from `reference_results/`. No model is fitted.
 
 ```bash
-uv run python -m matbo.visualisation               # Figures 1, 2, D.1-D.10 -> figures/paper/
+uv run python -m matbo.visualisation               # Figures 1, 2, D.1-D.9 -> figures/paper/
 uv run python -m matbo.visualisation 1 D.3         # selected figures only
-uv run python -m matbo.analysis.posthoc            # Table D.1, tables behind D.9 and D.10 -> figures/paper/posthoc/
+uv run python -m matbo.analysis.posthoc            # Table D.1 and the table behind D.9 -> figures/paper/posthoc/
 ```
 
 Normalized improvement (NI) rescales each campaign and budget so that the worst

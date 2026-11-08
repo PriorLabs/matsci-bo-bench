@@ -1,10 +1,10 @@
 # Reproduce the paper figures
 
 ```sh
-python -m matbo.visualisation                  # all twelve figures, PDF and PNG
-python -m matbo.visualisation 1 2 D.10          # selected figure numbers
+python -m matbo.visualisation                  # all eleven figures, PDF and PNG
+python -m matbo.visualisation 1 2 D.9           # selected figure numbers
 python -m matbo.visualisation --out /tmp/paper  # another output directory
-python -m matbo.analysis.posthoc                # tables behind D.9 and D.10
+python -m matbo.analysis.posthoc                # Table D.1 and the table behind D.9
 ```
 
 Figures go to `figures/paper/`, tables to `figures/paper/posthoc/<benchmark>/`.
@@ -24,24 +24,21 @@ is fitted. Install the project and the Olympus pool data first
 | D.6 | `figure_D_6` | Both benchmarks scored on Top-5% | `figures.budget` |
 | D.7 | `figure_D_7` | Both benchmarks scored on best value | `figures.budget` |
 | D.8 | `figure_D_8` | `olympus` kernel comparison, PI, raw best value | `kernels.kernel_variation` |
-| D.9 | `figure_D_9` | Paired differences, TabPFN minus each comparator | `posthoc.paired` |
-| D.10 | `figure_D_10` | Best acquisition rule per surrogate and campaign | `posthoc.best_rule` |
+| D.9 | `figure_D_9` | Best acquisition rule per surrogate and campaign | `posthoc.best_rule` |
 
 ## Tables
 
-- `paired_effects.csv`: D.9. Mean paired AUC difference (TabPFN minus each
-  other surrogate under the same rule, and minus Random), 95% seed-bootstrap
-  interval (10,000 resamples), SD and win/tie/loss fractions. Rows with
-  `analysis_variant = substituted-seeds-dropped` repeat a contrast without the
-  seeds that a run recorded as substituted.
-- `acquisition_cost.csv`: D.10. Mean AUC of every rule per surrogate and
+- `seed_tests.csv`: Table D.1. Welch t-test per campaign of the TabPFN arm of
+  Figure 1 against each other family's arm (`mean_diff`, `welch_p`, `verdict`).
+- `family_ranks.csv` (one file for both benchmarks): mean rank of each family
+  over all 15 campaigns, by mean and by median seed AUC, with the Friedman
+  p-value and the Nemenyi critical difference.
+- `acquisition_cost.csv`: D.9. Mean AUC of every rule per surrogate and
   campaign, its gap to the best rule (`cost`) and whether it is best.
-- `figure_scale.csv` (`olympus` only): the D.9 denominator per campaign, pool
-  best minus Random's mean AUC.
 
 AUC here is each seed's raw metric integrated over the linear 5-50% budget
-window and divided by its width. A positive paired difference favors the
-first arm, also on minimization campaigns; `mean` is in source units.
+window and divided by its width. A positive `mean_diff` favors TabPFN, also on
+minimization campaigns; `mean` is in source units.
 
 ## Numerical conventions
 

@@ -1,24 +1,16 @@
 # Copyright (c) Prior Labs GmbH 2026. Licensed under the Apache License, Version 2.0.
-"""Figures D.9 (paired differences) and D.10 (best acquisition rule)."""
+"""Figure D.9: best acquisition rule per surrogate and campaign."""
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 
 from matbo.analysis.field import METRICS, RULES
-from matbo.analysis.posthoc import COMPARATORS, RECORDED, tables
+from matbo.analysis.posthoc import tables
 
 from . import style as S
 
-# marker, color, size, interval width, z-order
-COMPARATOR_POINT = {
-    "GP": ("o", "#f3b08f", 2.0, 0.45, 2),
-    "RF": ("D", S.HUE["RF"], 3.0, 0.9, 3),
-    "CatBoost": ("P", S.HUE["CatBoost"], 3.6, 0.9, 3),
-    "TabICL": ("v", S.HUE["TabICL"], 3.6, 0.9, 3),
-}
 MAP_GROUPS = (("TabPFN", "TabICL"), tuple(f"GP-{k}" for k in ("ARD", "M32", "M12", "RBF", "iso",
                                                                 "MLP", "ARD-Warp")),
               ("RF", "CatBoost"))
@@ -31,74 +23,8 @@ RULE_COLOR = {"greedy": "#8a8a8a", "EI": "#e69f00", "PI": "#56b4e9", "UCB1": "#0
               "UCB2": "#cc79a7"}
 
 
-def _comparator_style(comparator):
-    return COMPARATOR_POINT["GP" if comparator.startswith("GP") else comparator]
-
-
-def _paired_panel(ax, rows, campaigns, scale):
-    for r, campaign in enumerate(campaigns):
-        if r % 2:
-            ax.axhspan(r - 0.5, r + 0.5, color="0.955", lw=0, zorder=0)
-        div = 1.0 if scale is None else scale[campaign]
-        sub = rows[rows.campaign == campaign].set_index("comparator")
-        order = [c for c in COMPARATORS if c in sub.index]
-        for k, comparator in enumerate(order):
-            row = sub.loc[comparator]
-            marker, color, size, lw, z = _comparator_style(comparator)
-            y = r + (k / (len(order) - 1) - 0.5) * 0.74
-            ax.plot([row.ci_low / div, row.ci_high / div], [y, y], color=color, lw=lw,
-                    solid_capstyle="butt", zorder=z)
-            ax.plot(row.mean_diff / div, y, marker=marker, ms=size, color=color, mec="white",
-                    mew=0.3, ls="", zorder=z + 0.5)
-    ax.axvline(0, color=S.INK, lw=1.1, zorder=1)
-    ax.set_ylim(len(campaigns) - 0.5, -0.5)
-    S.tidy(ax)
-    ax.grid(axis="y", visible=False)
-    ax.tick_params(axis="y", length=0)
-    ax.tick_params(axis="x", labelsize=6)
-
-
-def paired() -> plt.Figure:
-    """D.9: TabPFN minus each comparator under the same rule, per campaign.
-
-    Random contrasts stay in the table only: their gap is an order larger than every other.
-    """
-    blocks = {b: tables(b) for b in METRICS}
-    heights = [len(t.campaigns) for t in blocks.values()]
-    fig, axes = plt.subplots(len(blocks), len(RULES), squeeze=False, sharey="row",
-                             figsize=(S.TEXTWIDTH, 0.27 * sum(heights) + 1.8),
-                             gridspec_kw={"height_ratios": heights, "hspace": 0.5})
-    for i, (benchmark, t) in enumerate(blocks.items()):
-        effects, campaigns, scale = t.paired, t.campaigns, t.scale
-        e = effects[(effects.analysis_variant == RECORDED) & (effects.second != "Random")]
-        e = e.assign(comparator=e.second.str.rsplit("-", n=1).str[0])
-        for j, rule in enumerate(RULES):
-            ax = axes[i, j]
-            if j:
-                ax.sharex(axes[i, 0])
-            _paired_panel(ax, e[e.rule == rule], campaigns, scale)
-            if i == 0:
-                ax.set_title(rule, fontsize=8, pad=17)
-        axes[i, 0].set_yticks(range(len(campaigns)), campaigns, fontsize=6.5)
-        axes[i, 0].set_ylabel(benchmark, fontsize=8, fontweight="bold")
-        unit = "Top% AUC points" if scale is None else "fraction of Random-to-pool-best gap"
-        axes[i, len(RULES) // 2].set_xlabel(f"TabPFN − comparator ({unit})", fontsize=7)
-        for ax in axes[i]:
-            for text, ha, dx in (("comparator\nbetter", "right", -2),
-                                 ("TabPFN\nbetter", "left", 2)):
-                ax.annotate(text, xy=(0, 1), xycoords=("data", "axes fraction"),
-                            xytext=(dx, 1.5), textcoords="offset points", ha=ha, va="bottom",
-                            fontsize=4.6, color="0.35", linespacing=0.9)
-    legend = [Line2D([], [], marker=m, color=c, ms=s + 1, lw=lw,
-                     label="GP, 7 kernels" if f == "GP" else f)
-              for f, (m, c, s, lw, _) in COMPARATOR_POINT.items()]
-    band = S.legend(fig, legend, ncol=4, fontsize=6.5, handlelength=1.6)
-    fig.subplots_adjust(top=band - 0.055, bottom=0.07, left=0.17, right=0.99, wspace=0.12)
-    return fig
-
-
 def best_rule() -> plt.Figure:
-    """D.10: the rule with the best mean AUC for every surrogate on every campaign.
+    """D.9: the rule with the best mean AUC for every surrogate on every campaign.
 
     An exact tie is drawn as one vertical stripe per tied rule.
     """

@@ -61,7 +61,7 @@ def test_representatives_match_the_paper_linear_budget_ranking(benchmark, expect
 
 @pytest.mark.parametrize("number,axes", [
     ("1", 2), ("2", 1), ("D.1", 15), ("D.2", 10), ("D.3", 2), ("D.4", 1), ("D.5", 1),
-    ("D.6", 2), ("D.7", 2), ("D.8", 10), ("D.9", 10), ("D.10", 1),
+    ("D.6", 2), ("D.7", 2), ("D.8", 10), ("D.9", 1),
 ])
 def test_paper_figures_build(number, axes):
     fig = FIGURES[number]()
