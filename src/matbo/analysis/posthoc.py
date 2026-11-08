@@ -1,11 +1,14 @@
 #  Copyright (c) Prior Labs GmbH 2026.
 #  Licensed under the Apache License, Version 2.0
 
-"""Paired seed comparisons (Figure D.9) and best acquisition rules (Figure D.10).
+"""Seed-level tests (Table D.1), paired seed comparisons (Figure D.9) and best acquisition rules (Figure D.10).
 
 Each seed's score is the AUC of the raw metric over the linear 5-50% budget
 window, oriented so that larger is better. Paired differences are bootstrapped
 by resampling whole seeds jointly across every contrast of one campaign.
+Table D.1 tests the Figure 1 arms with a Welch t-test per campaign, and ranks
+their families across campaigns with a Friedman test and the Nemenyi
+critical difference.
 
     python -m matbo.analysis.posthoc --out figures/paper/posthoc
 """
@@ -20,9 +23,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 from matbo.analysis.field import (
-    DENSE_BUDGETS, FIELD, KERNELS, RULES, Scored, budget_columns, score,
+    DENSE_BUDGETS, FAMILIES, FIELD, KERNELS, RULES, Scored, budget_columns, score,
 )
 
 COMPARATORS = (*KERNELS, "RF", "CatBoost", "TabICL")
@@ -33,6 +37,7 @@ ANALYSIS_SEED = 20261018
 PAIRED_KEY = "A"
 SUBSTITUTED = "-substituted"  # run-tag marker of a seed rerun with Random acquisition
 RECORDED, DROPPED = "recorded", "substituted-seeds-dropped"
+ALPHA = 0.05
 
 
 def seed_auc(curves: np.ndarray, n: int) -> np.ndarray:
@@ -159,17 +164,53 @@ def acquisition_cost(cs: CampaignScores, scale: float = 1.0) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def seed_tests(scores: list[CampaignScores], arms: dict[str, str]) -> pd.DataFrame:
+    """Welch t-test per campaign of the TabPFN arm against each other family's arm.
+
+    `arms` maps each family to its Figure 1 arm. `mean_diff` is oriented:
+    positive favors TabPFN.
+    """
+    rows = []
+    ours = arms["TabPFN"]
+    for cs in scores:
+        for fam, arm in arms.items():
+            if fam == "TabPFN":
+                continue
+            t, o = cs.scores[ours], cs.scores[arm]
+            p = stats.ttest_ind(t, o, equal_var=False).pvalue
+            diff = t.mean() - o.mean()
+            # Two identical columns give p = nan: not separated.
+            verdict = "better" if p < ALPHA and diff > 0 else "worse" if p < ALPHA else "not separated"
+            rows.append({"benchmark": cs.benchmark, "campaign": cs.campaign, "family": fam,
+                         "comparator": arm, "mean_diff": diff, "welch_p": p, "verdict": verdict})
+    return pd.DataFrame(rows)
+
+
+def family_ranks(summary: pd.DataFrame) -> tuple[pd.Series, float, float]:
+    """Mean rank (1 = best), Friedman p-value and Nemenyi critical difference.
+
+    `summary` has one row per campaign and one column per family.
+    """
+    n, k = summary.shape
+    ranks = summary.rank(axis=1, ascending=False, method="average").mean()
+    p = stats.friedmanchisquare(*summary.to_numpy().T).pvalue
+    cd = stats.studentized_range.ppf(1 - ALPHA, k, np.inf) / np.sqrt(2) * np.sqrt(k * (k + 1) / (6 * n))
+    return ranks.sort_values(), p, cd
+
+
 @dataclass(frozen=True)
 class Tables:
     paired: pd.DataFrame
     cost: pd.DataFrame
+    seed_tests: pd.DataFrame
+    summaries: dict[str, pd.DataFrame]  # "mean"/"median" -> [campaign, family] seed-AUC summary
     campaigns: list[str]  # by pool size
     scale: dict[str, float] | None  # olympus: pool best minus Random's mean AUC
 
 
 @lru_cache(maxsize=None)
 def tables(benchmark: str) -> Tables:
-    """D.9 and D.10 inputs of one benchmark, on its own metric."""
+    """D.1, D.9 and D.10 inputs of one benchmark, on its own metric."""
     scored = score(benchmark)
     record = scored.record
     scores = [campaign_scores(scored, c) for c in record.campaigns]
@@ -180,24 +221,37 @@ def tables(benchmark: str) -> Tables:
     paired = pd.concat(paired_effects(cs, paired_pairs()) for cs in scores)
     cost = pd.concat(acquisition_cost(cs, scale[cs.campaign] if scale else 1.0)
                      for cs in scores)
+    arms = dict(zip((*FAMILIES, "Random"), scored.best()))
+    summaries = {stat: pd.DataFrame({cs.campaign: {f: getattr(np, stat)(cs.scores[a]) for f, a in arms.items()}
+                                     for cs in scores}).T
+                 for stat in ("mean", "median")}
     campaigns = sorted(record.campaigns, key=lambda c: record.campaign(c).n)
-    return Tables(paired, cost, campaigns, scale)
+    return Tables(paired, cost, seed_tests(scores, arms), summaries, campaigns, scale)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Write the tables behind Figures D.9 and D.10.")
+    parser = argparse.ArgumentParser(description="Write Table D.1 and the tables behind Figures D.9 and D.10.")
     parser.add_argument("--out", type=Path, default=Path("figures/paper/posthoc"))
     args = parser.parse_args()
+    ranks = []
     for benchmark in ("liang", "olympus"):
         t = tables(benchmark)
         folder = args.out / benchmark
         folder.mkdir(parents=True, exist_ok=True)
+        t.seed_tests.to_csv(folder / "seed_tests.csv", index=False)
         t.paired.to_csv(folder / "paired_effects.csv", index=False)
         t.cost.to_csv(folder / "acquisition_cost.csv", index=False)
         if t.scale:
             pd.Series(t.scale, name="random_to_pool_best_gap").rename_axis("campaign").to_csv(
                 folder / "figure_scale.csv")
         print(f"wrote {folder}", flush=True)
+    for stat in ("mean", "median"):
+        pooled = pd.concat(tables(b).summaries[stat] for b in ("liang", "olympus"))
+        mean_rank, p, cd = family_ranks(pooled)
+        ranks.append(mean_rank.rename("mean_rank").rename_axis("family").reset_index()
+                     .assign(summary=stat, friedman_p=p, critical_difference=cd))
+    pd.concat(ranks).to_csv(args.out / "family_ranks.csv", index=False)
+    print(f"wrote {args.out / 'family_ranks.csv'}", flush=True)
 
 
 if __name__ == "__main__":

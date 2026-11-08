@@ -180,3 +180,19 @@ def test_differing_initial_designs_are_refused(perovskite):
     rewrite(perovskite / "Random__Perovskite.trace.csv", swap)
     with pytest.raises(ValueError, match="initial designs differ"):
         perovskite_scores(perovskite)
+
+
+def test_seed_tests_separate_a_clear_shift_and_not_identical_arms():
+    arms = {"TabPFN": "t", "GP": "g", "RF": "r"}
+    cs = scores({"t": [5.0, 6, 7, 8], "g": [1.0, 2, 3, 4], "r": [5.0, 6, 7, 8]})
+    t = P.seed_tests([cs], arms).set_index("family")
+    assert t.loc["GP", "verdict"] == "better" and t.loc["GP", "mean_diff"] == 4
+    assert t.loc["RF", "verdict"] == "not separated"
+
+
+def test_family_ranks_follow_the_summary_and_the_nemenyi_cd():
+    summary = pd.DataFrame([[3.0, 2, 1]] * 4 + [[1.0, 2, 3]], columns=["a", "b", "c"])
+    ranks, p, cd = P.family_ranks(summary)
+    assert ranks.to_dict() == {"a": 1.4, "b": 2.0, "c": 2.6}
+    # Demsar (2006), Table 5: q_0.05 = 2.343 for three classifiers.
+    assert cd == pytest.approx(2.343 * np.sqrt(3 * 4 / (6 * 5)), abs=1e-3)
