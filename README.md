@@ -10,6 +10,13 @@ on real experimental campaigns. Each round, the optimizer picks the next
 candidate to measure from a finite pool of settings that were measured in the
 source study.
 
+![Retrospective, pool-based BO](docs/img/retrospective_bo.png)
+
+**a**, design space. **b**, the conditions the source study measured form the
+pool. **c**, features *x* are visible; outcomes *y* stay hidden until queried.
+**d**, the surrogate, fit on the queried rows, scores the rest, and the
+acquisition rule picks the next candidate, whose outcome is then revealed.
+
 ## What is in this repository
 
 | path | contents |
