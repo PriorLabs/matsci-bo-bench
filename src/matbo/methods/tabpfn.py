@@ -49,11 +49,15 @@ class TabPFNSurrogate:
         reg = self._regressor(req.seed)
         x_obs, y_obs, x_cand = req.x_obs, req.y_obs, req.x_cand
 
-        def _score(acquisition: str, best_f: float | None = None,
-                   beta: float | None = None) -> np.ndarray:
+        def _score(
+            acquisition: str, best_f: float | None = None, beta: float | None = None
+        ) -> np.ndarray:
             return np.asarray(
                 score_candidates(
-                    reg, x_obs, y_obs, x_cand,
+                    reg,
+                    x_obs,
+                    y_obs,
+                    x_cand,
                     best_f=req.best_f if best_f is None else best_f,
                     acquisition=acquisition,
                     beta=beta,

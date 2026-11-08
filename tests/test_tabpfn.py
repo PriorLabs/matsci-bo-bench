@@ -27,11 +27,13 @@ def _tabpfn_weights_ready() -> bool:
     if os.environ.get("TABPFN_TOKEN", "").strip():
         return True
     try:
-        from tabpfn.model_loading import resolve_model_path
         from tabpfn.constants import ModelVersion
+        from tabpfn.model_loading import resolve_model_path
 
         paths, _dirs, _names, _which = resolve_model_path(
-            None, "regressor", version=ModelVersion.V3.value,
+            None,
+            "regressor",
+            version=ModelVersion.V3.value,
         )
     except Exception:  # noqa: BLE001 - any failure means "cannot tell", so skip
         return False
@@ -47,8 +49,11 @@ needs_weights = pytest.mark.skipif(
 def _perovskite_request() -> ScoreRequest:
     campaign = L.load("Perovskite")
     return ScoreRequest(
-        x_obs=campaign.x[:8], y_obs=campaign.y[:8], x_cand=campaign.x[8:24],
-        seed=3, campaign=campaign,
+        x_obs=campaign.x[:8],
+        y_obs=campaign.y[:8],
+        x_cand=campaign.x[8:24],
+        seed=3,
+        campaign=campaign,
     )
 
 
@@ -63,14 +68,13 @@ def test_tabpfn_mean_is_the_dedicated_output_and_ei_is_not_gaussian():
     assert np.all(np.isfinite(post.sd)) and np.all(post.sd > 0)
 
     reg = surrogate._regressor(req.seed)
-    reg.fit(np.asarray(req.x_obs, dtype=np.float64),
-            np.asarray(req.y_obs, dtype=np.float64))
-    direct = np.asarray(reg.predict(np.asarray(req.x_cand, dtype=np.float64),
-                                    output_type="mean"), dtype=np.float64).ravel()
+    reg.fit(np.asarray(req.x_obs, dtype=np.float64), np.asarray(req.y_obs, dtype=np.float64))
+    direct = np.asarray(
+        reg.predict(np.asarray(req.x_cand, dtype=np.float64), output_type="mean"), dtype=np.float64
+    ).ravel()
     np.testing.assert_array_equal(post.mean, direct)
 
-    ei = np.asarray(build_registry().methods["TabPFN-EI"].acquisition(post, req),
-                    dtype=np.float64)
+    ei = np.asarray(build_registry().methods["TabPFN-EI"].acquisition(post, req), dtype=np.float64)
     sd = np.clip(post.sd, 1e-9, None)
     z = (post.mean - req.best_f) / sd
     gaussian = (post.mean - req.best_f) * norm.cdf(z) + sd * norm.pdf(z)
@@ -100,16 +104,17 @@ def test_tabpfn_pi_and_ucb_are_not_gaussian():
 def _bar_distribution(dtype):
     """A hand-built Gaussian bar distribution, so these checks need no weights."""
     import torch
-
     from tabpfn.architectures.shared.bar_distribution import FullSupportBarDistribution
 
     borders = torch.linspace(-8.0, 8.0, 401, dtype=dtype)
     mids = (borders[1:] + borders[:-1]) / 2
     criterion = FullSupportBarDistribution(borders)
-    logits = torch.stack([
-        torch.distributions.Normal(mu, sd).log_prob(mids)
-        for mu, sd in ((0.0, 1.0), (1.5, 2.0), (-1.0, 0.5))
-    ]).to(dtype)
+    logits = torch.stack(
+        [
+            torch.distributions.Normal(mu, sd).log_prob(mids)
+            for mu, sd in ((0.0, 1.0), (1.5, 2.0), (-1.0, 0.5))
+        ]
+    ).to(dtype)
     return criterion, logits
 
 
@@ -117,8 +122,7 @@ class _FixedPrediction:
     """A regressor stand-in that answers with one prepared bar distribution."""
 
     def __init__(self, criterion, logits):
-        self._out = {"criterion": criterion, "logits": logits,
-                     "mean": criterion.mean(logits)}
+        self._out = {"criterion": criterion, "logits": logits, "mean": criterion.mean(logits)}
 
     def fit(self, x, y):
         return self
@@ -142,9 +146,7 @@ def test_pi_and_ucb_match_closed_forms_in_either_dtype(dtype_name):
     args = (reg, np.zeros((2, 1)), np.array([0.0, 1.0]), np.zeros((3, 1)))
 
     mean = score_candidates(*args, acquisition="mean")
-    sd = np.sqrt(
-        np.asarray(criterion.variance(logits).detach().numpy(), dtype=np.float64)
-    ).ravel()
+    sd = np.sqrt(np.asarray(criterion.variance(logits).detach().numpy(), dtype=np.float64)).ravel()
 
     for best_f in (-2.0, 0.5, 2.0):
         pi = score_candidates(*args, acquisition="pi", best_f=best_f)

@@ -62,9 +62,7 @@ class Posterior:
         """Return ``attr``, or raise :class:`Unsupported` naming ``who`` if it is missing."""
         value = getattr(self, attr, None)
         if value is None:
-            raise Unsupported(
-                f"{who} needs `{attr}`, which this surrogate does not provide."
-            )
+            raise Unsupported(f"{who} needs `{attr}`, which this surrogate does not provide.")
         return value
 
 
@@ -93,8 +91,7 @@ class Method:
         scores = np.asarray(scores, dtype=np.float64).ravel()
         if len(scores) != len(request.x_cand):
             raise ValueError(
-                f"{self.name}: scored {len(scores)} candidates, "
-                f"expected {len(request.x_cand)}"
+                f"{self.name}: scored {len(scores)} candidates, expected {len(request.x_cand)}"
             )
         return scores
 

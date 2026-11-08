@@ -7,17 +7,25 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from conftest import SYNTHETIC
+
 from matbo import Campaign, Curves, Protocol
 
 
 def _run_file(scale_budget=True, methods=("A",), n_cols=22):
     from matbo.results import RunFile
+
     run = RunFile(Protocol(n_seeds=3, scale_budget=scale_budget))
     for m in methods:
-        run.add("camp", m, Curves(np.ones((3, n_cols)), 2), n_top=5, n_pool=100,
-                traces=np.zeros((3, n_cols), dtype=int), fingerprint="pool")
+        run.add(
+            "camp",
+            m,
+            Curves(np.ones((3, n_cols)), 2),
+            n_top=5,
+            n_pool=100,
+            traces=np.zeros((3, n_cols), dtype=int),
+            fingerprint="pool",
+        )
     return run
 
 
@@ -51,7 +59,7 @@ def test_incompatible_merge_raises_and_leaves_file_intact(tmp_path):
 
 def test_merge_refuses_a_different_pool_before_mutating(tmp_path):
     """A trace cannot move under the fingerprint and metadata of another pool."""
-    from matbo.results import IncompatiblePool, RunFile
+    from matbo.results import IncompatiblePool
 
     path = str(tmp_path / "curves.npz")
     prior = _run_file(methods=("old",))
@@ -84,8 +92,13 @@ def test_adding_an_arm_refuses_a_pool_loaded_by_an_earlier_merge(tmp_path):
     current.merge_from(path, log=lambda _m: None)
     with pytest.raises(IncompatiblePool, match="fingerprint"):
         current.add(
-            "camp", "new", Curves(np.ones((3, 22)), 2), n_top=5, n_pool=100,
-            traces=np.zeros((3, 22), dtype=int), fingerprint="new-pool",
+            "camp",
+            "new",
+            Curves(np.ones((3, 22)), 2),
+            n_top=5,
+            n_pool=100,
+            traces=np.zeros((3, 22), dtype=int),
+            fingerprint="new-pool",
         )
     assert current.methods == ["old"]
 
@@ -103,14 +116,22 @@ def test_run_suite_preflights_a_merged_pool_before_fitting():
     protocol = Protocol(n_seeds=1, n_steps=1, scale_budget=False)
     prior = RunFile(protocol)
     prior.add(
-        "camp", "old", Curves(np.zeros((1, 3)), 2), n_top=1, n_pool=20,
-        traces=np.zeros((1, 3), dtype=int), fingerprint="superseded-pool",
+        "camp",
+        "old",
+        Curves(np.zeros((1, 3)), 2),
+        n_top=1,
+        n_pool=20,
+        traces=np.zeros((1, 3), dtype=int),
+        fingerprint="superseded-pool",
     )
 
     with pytest.raises(IncompatiblePool, match="fingerprint"):
         run_suite(
-            [campaign], build_registry().select(["Random"]), protocol,
-            into=prior, log=lambda _m: None,
+            [campaign],
+            build_registry().select(["Random"]),
+            protocol,
+            into=prior,
+            log=lambda _m: None,
         )
     assert prior.methods == ["old"]
 

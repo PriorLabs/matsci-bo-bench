@@ -13,8 +13,8 @@ import pandas as pd
 import pytest
 
 from matbo.analysis import posthoc as P
-from matbo.analysis.record import REFERENCE, Record
 from matbo.analysis.field import DENSE_BUDGETS, FIELD, RULES, Scored
+from matbo.analysis.record import REFERENCE, Record
 
 SEEDS = (7, 3, 11, 5)
 
@@ -25,8 +25,11 @@ def scores(values: dict[str, np.ndarray], sign=1, substituted=None) -> P.Campaig
 
 
 def test_minimisation_keeps_improvement_positive_and_reports_source_units():
-    values = {f"{s}-{r}": -np.array([10.0, 12, 14, 16]) + i
-              for s in P.SURROGATES for i, r in enumerate(RULES)}
+    values = {
+        f"{s}-{r}": -np.array([10.0, 12, 14, 16]) + i
+        for s in P.SURROGATES
+        for i, r in enumerate(RULES)
+    }
     cs = scores(values, sign=-1)
     cost = P.acquisition_cost(cs).query("surrogate == 'TabPFN'").set_index("rule")
     assert cost.loc["greedy", "mean"] == 13
@@ -85,8 +88,9 @@ def perovskite_scores(folder) -> P.CampaignScores:
 def test_liang_scores_are_top_percent_and_row_order_is_irrelevant(perovskite):
     before = perovskite_scores(perovskite)
     assert before.units.startswith("Top%")
-    assert (Record.load("liang", perovskite.parent).block("Random", "Perovskite")[:, -1]
-            == 100).all()
+    assert (
+        Record.load("liang", perovskite.parent).block("Random", "Perovskite")[:, -1] == 100
+    ).all()
     rewrite(perovskite / "Random__Perovskite.trace.csv", lambda rows: rows[::-1])
     after = perovskite_scores(perovskite)
     for arm in FIELD:

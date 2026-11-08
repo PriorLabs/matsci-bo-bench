@@ -8,8 +8,8 @@ from __future__ import annotations
 import dataclasses
 
 import pytest
-
 from conftest import SYNTHETIC
+
 from matbo import Protocol
 from matbo import loaders as L
 from matbo.benchmarks import BENCHMARKS, Benchmark, _loop, resolve_loop
@@ -27,7 +27,8 @@ def test_device_is_recorded_but_does_not_refuse_a_merge():
     assert Protocol(device="cpu").incompatible_with(Protocol(device="cuda")) == []
     assert "device" in Protocol().to_json()
     assert Protocol(device="cpu", n_initial=2).incompatible_with(
-        Protocol(device="cuda", n_initial=5)) == ["n_initial"]
+        Protocol(device="cuda", n_initial=5)
+    ) == ["n_initial"]
 
 
 def test_exhaust_overrides_the_step_horizon():
@@ -65,7 +66,8 @@ def test_liang_and_olympus_loops_are_refused_together():
 def test_benchmarks_with_different_loops_are_refused_together():
     assert resolve_loop(["liang"]) == BENCHMARKS["liang"].loop
     odd = Benchmark(
-        name="odd", pool=SYNTHETIC,
+        name="odd",
+        pool=SYNTHETIC,
         loop=dataclasses.replace(BENCHMARKS["liang"].loop, n_steps=99),
         note="test fixture",
     )
@@ -85,9 +87,14 @@ def test_benchmark_loop_must_be_stated_in_full():
 def test_pool_rules_reject_a_meaningless_combination():
     """`keep` leaves nothing to group, so `grouped` would be a false claim."""
     with pytest.raises(ValueError, match="nothing to group"):
-        PoolRules(follows="x", replicates="keep", order="grouped",
-                  direction="per-campaign", constraints="unconstrained",
-                  not_reproduced=())
+        PoolRules(
+            follows="x",
+            replicates="keep",
+            order="grouped",
+            direction="per-campaign",
+            constraints="unconstrained",
+            not_reproduced=(),
+        )
 
 
 def test_env_overrides_the_benchmark_loop_but_does_not_replace_it(monkeypatch):
@@ -100,8 +107,17 @@ def test_env_overrides_the_benchmark_loop_but_does_not_replace_it(monkeypatch):
 
 
 def test_env_leaves_an_unset_loop_untouched(monkeypatch):
-    for var in ("SMOKE", "N_INITIAL", "TOP_FRAC", "N_SEEDS", "N_STEPS", "METRIC",
-                "SCALE_BUDGET", "EXHAUST", "SEED_SLICE"):
+    for var in (
+        "SMOKE",
+        "N_INITIAL",
+        "TOP_FRAC",
+        "N_SEEDS",
+        "N_STEPS",
+        "METRIC",
+        "SCALE_BUDGET",
+        "EXHAUST",
+        "SEED_SLICE",
+    ):
         monkeypatch.delenv(var, raising=False)
     for bench in BENCHMARKS.values():
         assert Protocol.from_env(base=bench.loop).incompatible_with(bench.loop) == []

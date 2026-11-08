@@ -20,8 +20,10 @@ METRICS = {"liang": "topcount", "olympus": "best-value"}
 FAMILIES = ("TabPFN", "TabICL", "GP", "CatBoost", "RF")
 RULES = ("greedy", "EI", "PI", "UCB1", "UCB2")
 KERNELS = ("GP-ARD", "GP-M32", "GP-M12", "GP-RBF", "GP-iso", "GP-MLP", "GP-ARD-Warp")
-FIELD = (*(f"{s}-{r}" for s in ("TabPFN", "TabICL", "CatBoost", "RF", *KERNELS)
-           for r in RULES), "Random")
+FIELD = (
+    *(f"{s}-{r}" for s in ("TabPFN", "TabICL", "CatBoost", "RF", *KERNELS) for r in RULES),
+    "Random",
+)
 
 
 def family(arm: str) -> str:
@@ -54,8 +56,12 @@ class Scored:
 
     def sample(self, budgets=BUDGETS) -> np.ndarray:
         """[campaign, budget, arm, seed] on the metric's own scale."""
-        return np.stack([block[:, :, budget_columns(block.shape[2], budgets)].transpose(2, 0, 1)
-                         for block in self.blocks.values()])
+        return np.stack(
+            [
+                block[:, :, budget_columns(block.shape[2], budgets)].transpose(2, 0, 1)
+                for block in self.blocks.values()
+            ]
+        )
 
     def ni(self, budgets=BUDGETS) -> np.ndarray:
         """[campaign, budget, arm] normalized improvement."""
@@ -83,8 +89,9 @@ def score(benchmark: str, metric: str | None = None) -> Scored:
 def _score(benchmark: str, metric: str) -> Scored:
     record = Record.load(benchmark)
     record = replace(record, protocol=replace(record.protocol, metric=metric))
-    missing = [f"{a} on {c}" for a in FIELD for c in record.campaigns
-               if not record.path(a, c).exists()]
+    missing = [
+        f"{a} on {c}" for a in FIELD for c in record.campaigns if not record.path(a, c).exists()
+    ]
     if missing:
         raise ValueError(f"{benchmark}: incomplete paper field: {missing}")
     blocks = {}
@@ -108,7 +115,8 @@ def kernel_values(scored: Scored) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     x = np.log10(BUDGETS)
     per = np.trapezoid(scored.sample(), x, axis=1) / np.ptp(x)
     rng = np.random.default_rng(0)
-    draws = [per[:, :, rng.integers(per.shape[2], size=per.shape[2])].mean(axis=2)
-             for _ in range(400)]
+    draws = [
+        per[:, :, rng.integers(per.shape[2], size=per.shape[2])].mean(axis=2) for _ in range(400)
+    ]
     lo, hi = np.percentile(draws, [2.5, 97.5], axis=0)
     return per.mean(axis=2), lo, hi

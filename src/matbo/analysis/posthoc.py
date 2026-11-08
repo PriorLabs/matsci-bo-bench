@@ -23,7 +23,14 @@ import pandas as pd
 from scipy import stats
 
 from matbo.analysis.field import (
-    DENSE_BUDGETS, FAMILIES, FIELD, KERNELS, RULES, Scored, budget_columns, score,
+    DENSE_BUDGETS,
+    FAMILIES,
+    FIELD,
+    KERNELS,
+    RULES,
+    Scored,
+    budget_columns,
+    score,
 )
 
 SURROGATES = ("TabPFN", "TabICL", "CatBoost", "RF", *KERNELS)
@@ -61,8 +68,11 @@ def campaign_scores(scored: Scored, campaign: str) -> CampaignScores:
     rows = {arm: record.rows(arm, campaign) for arm in FIELD}
     seeds = tuple(record.protocol.seeds)
     k = record.protocol.n_initial
-    unpaired = [s for i, s in enumerate(seeds)
-                if len({tuple(sorted(r[i]["trace"][:k])) for r in rows.values()}) > 1]
+    unpaired = [
+        s
+        for i, s in enumerate(seeds)
+        if len({tuple(sorted(r[i]["trace"][:k])) for r in rows.values()}) > 1
+    ]
     if unpaired:
         raise ValueError(f"{campaign}: initial designs differ across arms for seeds {unpaired}")
     if record.protocol.metric == "topcount":
@@ -70,19 +80,32 @@ def campaign_scores(scored: Scored, campaign: str) -> CampaignScores:
     else:
         sign = -1 if pool.objective.endswith("(min)") else 1
         units = f"{pool.objective}, original units"
-    substituted = {arm: {int(r["seed"]) for r in rs if SUBSTITUTED in r["run_tag"]}
-                   for arm, rs in rows.items()}
+    substituted = {
+        arm: {int(r["seed"]) for r in rs if SUBSTITUTED in r["run_tag"]} for arm, rs in rows.items()
+    }
     return CampaignScores(
-        record.benchmark, campaign, pool.n, seeds, sign, units,
+        record.benchmark,
+        campaign,
+        pool.n,
+        seeds,
+        sign,
+        units,
         {arm: seed_auc(block[i], pool.n) for i, arm in enumerate(FIELD)},
-        {arm: s for arm, s in substituted.items() if s})
+        {arm: s for arm, s in substituted.items() if s},
+    )
 
 
 def _base(cs: CampaignScores, arms) -> dict:
     flags = sorted({f"{a}:seed {s}" for a in arms for s in cs.substituted.get(a, ())})
-    return {"benchmark": cs.benchmark, "campaign": cs.campaign, "pool": cs.n,
-            "units": cs.units, "goal": "maximize" if cs.sign > 0 else "minimize",
-            "n_seeds": len(cs.seeds), "substituted": ", ".join(flags)}
+    return {
+        "benchmark": cs.benchmark,
+        "campaign": cs.campaign,
+        "pool": cs.n,
+        "units": cs.units,
+        "goal": "maximize" if cs.sign > 0 else "minimize",
+        "n_seeds": len(cs.seeds),
+        "substituted": ", ".join(flags),
+    }
 
 
 def acquisition_cost(cs: CampaignScores) -> pd.DataFrame:
@@ -96,9 +119,16 @@ def acquisition_cost(cs: CampaignScores) -> pd.DataFrame:
         mean = np.stack([cs.scores[a] for a in arms], axis=1).mean(axis=0)
         top = mean.max()
         for r, rule in enumerate(RULES):
-            rows.append({
-                **_base(cs, arms), "surrogate": s, "rule": rule,
-                "mean": cs.sign * mean[r], "cost": top - mean[r], "best": mean[r] == top})
+            rows.append(
+                {
+                    **_base(cs, arms),
+                    "surrogate": s,
+                    "rule": rule,
+                    "mean": cs.sign * mean[r],
+                    "cost": top - mean[r],
+                    "best": mean[r] == top,
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -118,9 +148,20 @@ def seed_tests(scores: list[CampaignScores], arms: dict[str, str]) -> pd.DataFra
             p = stats.ttest_ind(t, o, equal_var=False).pvalue
             diff = t.mean() - o.mean()
             # Two identical columns give p = nan: not separated.
-            verdict = "better" if p < ALPHA and diff > 0 else "worse" if p < ALPHA else "not separated"
-            rows.append({"benchmark": cs.benchmark, "campaign": cs.campaign, "family": fam,
-                         "comparator": arm, "mean_diff": diff, "welch_p": p, "verdict": verdict})
+            verdict = (
+                "better" if p < ALPHA and diff > 0 else "worse" if p < ALPHA else "not separated"
+            )
+            rows.append(
+                {
+                    "benchmark": cs.benchmark,
+                    "campaign": cs.campaign,
+                    "family": fam,
+                    "comparator": arm,
+                    "mean_diff": diff,
+                    "welch_p": p,
+                    "verdict": verdict,
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -132,7 +173,11 @@ def family_ranks(summary: pd.DataFrame) -> tuple[pd.Series, float, float]:
     n, k = summary.shape
     ranks = summary.rank(axis=1, ascending=False, method="average").mean()
     p = stats.friedmanchisquare(*summary.to_numpy().T).pvalue
-    cd = stats.studentized_range.ppf(1 - ALPHA, k, np.inf) / np.sqrt(2) * np.sqrt(k * (k + 1) / (6 * n))
+    cd = (
+        stats.studentized_range.ppf(1 - ALPHA, k, np.inf)
+        / np.sqrt(2)
+        * np.sqrt(k * (k + 1) / (6 * n))
+    )
     return ranks.sort_values(), p, cd
 
 
@@ -152,9 +197,15 @@ def tables(benchmark: str) -> Tables:
     scores = [campaign_scores(scored, c) for c in record.campaigns]
     cost = pd.concat(acquisition_cost(cs) for cs in scores)
     arms = dict(zip((*FAMILIES, "Random"), scored.best()))
-    summaries = {stat: pd.DataFrame({cs.campaign: {f: getattr(np, stat)(cs.scores[a]) for f, a in arms.items()}
-                                     for cs in scores}).T
-                 for stat in ("mean", "median")}
+    summaries = {
+        stat: pd.DataFrame(
+            {
+                cs.campaign: {f: getattr(np, stat)(cs.scores[a]) for f, a in arms.items()}
+                for cs in scores
+            }
+        ).T
+        for stat in ("mean", "median")
+    }
     campaigns = sorted(record.campaigns, key=lambda c: record.campaign(c).n)
     return Tables(cost, seed_tests(scores, arms), summaries, campaigns)
 
@@ -174,8 +225,12 @@ def main():
     for stat in ("mean", "median"):
         pooled = pd.concat(tables(b).summaries[stat] for b in ("liang", "olympus"))
         mean_rank, p, cd = family_ranks(pooled)
-        ranks.append(mean_rank.rename("mean_rank").rename_axis("family").reset_index()
-                     .assign(summary=stat, friedman_p=p, critical_difference=cd))
+        ranks.append(
+            mean_rank.rename("mean_rank")
+            .rename_axis("family")
+            .reset_index()
+            .assign(summary=stat, friedman_p=p, critical_difference=cd)
+        )
     pd.concat(ranks).to_csv(args.out / "family_ranks.csv", index=False)
     print(f"wrote {args.out / 'family_ranks.csv'}", flush=True)
 

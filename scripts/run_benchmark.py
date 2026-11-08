@@ -29,7 +29,8 @@ import os
 import sys
 
 from matbo import loaders as L
-from matbo.benchmarks import BENCHMARKS, get as get_benchmark, resolve_loop
+from matbo.benchmarks import BENCHMARKS, resolve_loop
+from matbo.benchmarks import get as get_benchmark
 from matbo.loaders.paths import RESULTS_DIR
 from matbo.methods import build_registry
 from matbo.protocol import Protocol
@@ -50,13 +51,16 @@ def main() -> int:
     if not families:
         sys.exit(
             "FAMILIES is required -- there is no default benchmark.\n"
-            "  available: " + ", ".join(sorted(BENCHMARKS)) + "\n"
+            "  available: "
+            + ", ".join(sorted(BENCHMARKS))
+            + "\n"
             + "\n".join(f"    {n:16s} {b.note}" for n, b in sorted(BENCHMARKS.items()))
         )
     unknown = [f for f in families if f not in BENCHMARKS]
     if unknown:
-        sys.exit(f"unknown benchmark(s) {', '.join(unknown)}; "
-                 f"known: {', '.join(sorted(BENCHMARKS))}")
+        sys.exit(
+            f"unknown benchmark(s) {', '.join(unknown)}; known: {', '.join(sorted(BENCHMARKS))}"
+        )
 
     try:
         protocol = Protocol.from_env(base=resolve_loop(families))
@@ -128,7 +132,10 @@ def main() -> int:
             return 2
 
     run = run_suite(
-        campaigns, methods, protocol, log=log,
+        campaigns,
+        methods,
+        protocol,
+        log=log,
         checkpoint=lambda r: r.save(str(curves_path)),
         workers=int(os.environ.get("WORKERS", "1")),
         into=prior,

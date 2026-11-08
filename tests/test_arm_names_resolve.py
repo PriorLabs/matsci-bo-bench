@@ -32,12 +32,16 @@ def _string_literals(path: Path) -> Iterator[tuple[int, str]]:
     tree = ast.parse(path.read_text())
     interpolated = {
         id(part)
-        for node in ast.walk(tree) if isinstance(node, ast.JoinedStr)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.JoinedStr)
         for part in node.values
     }
     for node in ast.walk(tree):
-        if (isinstance(node, ast.Constant) and isinstance(node.value, str)
-                and id(node) not in interpolated):
+        if (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and id(node) not in interpolated
+        ):
             yield node.lineno, node.value
 
 
@@ -57,9 +61,7 @@ def test_every_arm_name_in_a_string_literal_resolves():
             if any(a.startswith(name + "-") for a in known):
                 continue
             stale.append(f"{path.relative_to(ROOT)}:{lineno}: {name!r}")
-    assert not stale, (
-        "arm names that do not resolve in the registry:\n  " + "\n  ".join(stale)
-    )
+    assert not stale, "arm names that do not resolve in the registry:\n  " + "\n  ".join(stale)
 
 
 def test_the_guard_would_catch_an_unregistered_arm():

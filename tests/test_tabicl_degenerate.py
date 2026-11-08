@@ -22,9 +22,7 @@ DUPLICATE_ROWS = np.array([[0.4, 1.0, 0.5, 118.2], [0.4, 1.0, 0.5, 118.2]])
 def _fit(x_obs: np.ndarray, y_obs: np.ndarray, x_cand: np.ndarray, seed: int = 96) -> Posterior:
     from matbo.methods.tabicl import TabICLSurrogate
 
-    return TabICLSurrogate().fit(
-        ScoreRequest(x_obs=x_obs, y_obs=y_obs, x_cand=x_cand, seed=seed)
-    )
+    return TabICLSurrogate().fit(ScoreRequest(x_obs=x_obs, y_obs=y_obs, x_cand=x_cand, seed=seed))
 
 
 def test_the_library_still_raises_on_a_constant_context():
@@ -32,9 +30,7 @@ def test_the_library_still_raises_on_a_constant_context():
     from tabicl import TabICLRegressor
 
     with pytest.raises(IndexError):
-        TabICLRegressor(n_estimators=4, random_state=96).fit(
-            DUPLICATE_ROWS, np.array([-3.2, -3.2])
-        )
+        TabICLRegressor(n_estimators=4, random_state=96).fit(DUPLICATE_ROWS, np.array([-3.2, -3.2]))
 
 
 def test_one_varying_column_is_enough_so_the_guard_must_not_be_broader():

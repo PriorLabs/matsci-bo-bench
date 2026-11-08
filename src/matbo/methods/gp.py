@@ -30,12 +30,16 @@ FAILURE_ALARM = 0.10
 def fit_failure_report(clear: bool = True) -> list[str]:
     """Lines describing this run's fit failures, worst first. Empty if none."""
     lines = []
-    for name, (fails, tries) in sorted(FIT_FAILURES.items(), key=lambda kv: -kv[1][0] / max(kv[1][1], 1)):
+    for name, (fails, tries) in sorted(
+        FIT_FAILURES.items(), key=lambda kv: -kv[1][0] / max(kv[1][1], 1)
+    ):
         if not fails:
             continue
         rate = fails / tries
         note = f"  UNUSABLE: its curve is not a fitted GP-{name}" if rate > FAILURE_ALARM else ""
-        lines.append(f"GP-{name}: {fails}/{tries} fits fell back to the prior ({100 * rate:.0f}%){note}")
+        lines.append(
+            f"GP-{name}: {fails}/{tries} fits fell back to the prior ({100 * rate:.0f}%){note}"
+        )
     if clear:
         FIT_FAILURES.clear()
     return lines
@@ -55,7 +59,9 @@ class MLPKernel(Kernel):
         shape = (*self.batch_shape, 1, ard_num_dims or 1)
         self.register_parameter("raw_weight_variance", torch.nn.Parameter(torch.zeros(*shape)))
         self.register_constraint("raw_weight_variance", Positive())
-        self.register_parameter("raw_bias_variance", torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1)))
+        self.register_parameter(
+            "raw_bias_variance", torch.nn.Parameter(torch.zeros(*self.batch_shape, 1, 1))
+        )
         self.register_constraint("raw_bias_variance", Positive())
 
     @property
@@ -105,8 +111,11 @@ def _fit_or_fall_back(gp: SingleTaskGP, kernel: str) -> None:
     except Exception as exc:  # noqa: BLE001 - any fit failure falls back to the prior
         tally[0] += 1
         if tally[0] == 1:
-            print(f"    WARNING GP-{kernel}: fit failed, falling back to prior hyperparameters -- "
-                  f"{type(exc).__name__}: {str(exc).splitlines()[0][:90]}", flush=True)
+            print(
+                f"    WARNING GP-{kernel}: fit failed, falling back to prior hyperparameters -- "
+                f"{type(exc).__name__}: {str(exc).splitlines()[0][:90]}",
+                flush=True,
+            )
 
 
 @dataclass
@@ -135,7 +144,8 @@ class GPSurrogate:
             else Normalize(d=d)
         )
         gp = SingleTaskGP(
-            tx, ty,
+            tx,
+            ty,
             covar_module=ScaleKernel(KERNELS[self.kernel](d)),
             input_transform=transform,
             outcome_transform=Standardize(m=1),

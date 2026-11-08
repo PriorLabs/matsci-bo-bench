@@ -94,8 +94,9 @@ def score_candidates(
         # that raises. So the incumbent is passed in the borders' dtype.
         # ``ei`` keeps the bare float: a typed tensor there changes its result
         # under float64 borders.
-        best_f = torch.full(logits.shape[:-1], float(best_f),
-                            dtype=criterion.borders.dtype, device=logits.device)
+        best_f = torch.full(
+            logits.shape[:-1], float(best_f), dtype=criterion.borders.dtype, device=logits.device
+        )
         return _np(criterion.pi(logits, best_f, maximize=True))
     return _np(criterion.ei(logits, float(best_f), maximize=True))
 

@@ -63,14 +63,14 @@ class PoolRules:
 
     def __post_init__(self):
         for field_name, allowed in (
-            ("replicates", REPLICATES), ("order", ORDER),
-            ("direction", DIRECTION), ("constraints", CONSTRAINTS),
+            ("replicates", REPLICATES),
+            ("order", ORDER),
+            ("direction", DIRECTION),
+            ("constraints", CONSTRAINTS),
         ):
             value = getattr(self, field_name)
             if value not in allowed:
-                raise ValueError(
-                    f"{field_name}={value!r} is not one of {sorted(allowed)}"
-                )
+                raise ValueError(f"{field_name}={value!r} is not one of {sorted(allowed)}")
         if self.replicates == "keep" and self.order == "grouped":
             raise ValueError(
                 "order='grouped' is the residue of averaging; with "

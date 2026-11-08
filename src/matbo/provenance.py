@@ -63,9 +63,7 @@ def describe(campaign: Campaign, top_frac: float = 0.05) -> list[str]:
             if raw is not None and raw != campaign.n:
                 bits.append(f"{raw} rows read, {raw - campaign.n} collapsed or dropped")
         if published.features != campaign.dim:
-            bits.append(
-                f"paper reports {published.features} features, we build {campaign.dim}"
-            )
+            bits.append(f"paper reports {published.features} features, we build {campaign.dim}")
         if bits:
             lines.append("pool differs from the source: " + "; ".join(bits))
         elif raw is not None and raw != campaign.n:
@@ -86,8 +84,7 @@ def describe(campaign: Campaign, top_frac: float = 0.05) -> list[str]:
         )
     if not campaign.is_discriminative(top_frac):
         lines.append(
-            "target is too flat for the top set to be well defined "
-            "(reported, not excluded)"
+            "target is too flat for the top set to be well defined (reported, not excluded)"
         )
     return lines
 

@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from conftest import SYNTHETIC
+
 from matbo import Campaign
 from matbo import loaders as L
 
@@ -42,5 +42,4 @@ def test_top_mask_size_matches_n_top():
 def test_campaign_rejects_nonfinite():
     x = np.array([[0.0], [np.nan]])
     with pytest.raises(ValueError, match="finite"):
-        Campaign(name="bad", family="t", x=x, y=np.array([1.0, 2.0]),
-                 objective="o", pool=SYNTHETIC)
+        Campaign(name="bad", family="t", x=x, y=np.array([1.0, 2.0]), objective="o", pool=SYNTHETIC)

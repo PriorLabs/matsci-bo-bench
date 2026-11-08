@@ -55,20 +55,23 @@ def liang():
                 ax.set_xlim(0, 1)
             if col == 0:
                 ax.set_ylim(0, 1)
-                ax.plot(x, x / pool.n, color="0.2", lw=.8, ls=(0, (4, 3)))
-                ax.axhline(.8, color="0.5", lw=.7, ls=(0, (2, 3)))
-                ax.set_ylabel(f"{campaign}\n{pool.n} cand., top {pool.n_top(.05)}", fontsize=6)
+                ax.plot(x, x / pool.n, color="0.2", lw=0.8, ls=(0, (4, 3)))
+                ax.axhline(0.8, color="0.5", lw=0.7, ls=(0, (2, 3)))
+                ax.set_ylabel(f"{campaign}\n{pool.n} cand., top {pool.n_top(0.05)}", fontsize=6)
             else:
                 ax.set_ylim(bottom=0)
-                ax.axhline(1, color="0.2", lw=.8, ls=(0, (4, 3)))
+                ax.axhline(1, color="0.2", lw=0.8, ls=(0, (4, 3)))
             if row < 4:
                 ax.tick_params(labelbottom=False)
-    for ax, title in zip(axes[0], ("a  Top% against learning cycle", "b  enhancement factor", "c  acceleration factor")):
+    for ax, title in zip(
+        axes[0],
+        ("a  Top% against learning cycle", "b  enhancement factor", "c  acceleration factor"),
+    ):
         ax.set_title(title, fontsize=7, loc="left")
     for ax, label in zip(axes[-1], ("learning cycle $i$", "learning cycle $i$", "Top%")):
         ax.set_xlabel(label, fontsize=7)
     band = _legend(fig, arms, "random (analytic)", (0, (4, 3)))
-    fig.tight_layout(rect=(0, 0, 1, band), w_pad=.5, h_pad=.4)
+    fig.tight_layout(rect=(0, 0, 1, band), w_pad=0.5, h_pad=0.4)
     return fig
 
 
@@ -85,10 +88,10 @@ def olympus():
             curves = s.blocks[campaign][FIELD.index(arm)]
             _band(ax, x, curves, S.HUE[family(arm)], (25, 75), mean=True)
         S.tidy(ax)
-        ax.axhline(pool.y.max(), color="0.4", lw=.7, ls=(0, (1, 3)))
+        ax.axhline(pool.y.max(), color="0.4", lw=0.7, ls=(0, (1, 3)))
         ax.set_xscale("log")
         ax.set_xlim(1, pool.n)
-        ticks = [i for i in BENCHMARKS['olympus'].checkpoints if i < pool.n / 1.5] + [pool.n]
+        ticks = [i for i in BENCHMARKS["olympus"].checkpoints if i < pool.n / 1.5] + [pool.n]
         ax.set_xticks(ticks, [str(i) for i in ticks])
         ax.xaxis.set_minor_formatter(NullFormatter())
         ax.tick_params(labelsize=5.5)
@@ -97,5 +100,5 @@ def olympus():
         ax.set_xlabel("evaluations")
     fig.supylabel("best value found (oriented units, per-campaign scale)", fontsize=8)
     band = _legend(fig, arms, "pool maximum", (0, (1, 3)))
-    fig.tight_layout(rect=(.025, 0, 1, band), w_pad=1.0, h_pad=.5)
+    fig.tight_layout(rect=(0.025, 0, 1, band), w_pad=1.0, h_pad=0.5)
     return fig

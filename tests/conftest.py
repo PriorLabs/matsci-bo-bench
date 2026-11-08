@@ -10,6 +10,9 @@ from matbo.pool import PoolRules
 # Pool rules for synthetic campaigns built inside tests.
 SYNTHETIC = PoolRules(
     follows="synthetic test fixture, no source",
-    replicates="keep", order="source", direction="per-campaign",
-    constraints="unconstrained", not_reproduced=(),
+    replicates="keep",
+    order="source",
+    direction="per-campaign",
+    constraints="unconstrained",
+    not_reproduced=(),
 )

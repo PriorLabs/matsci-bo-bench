@@ -68,9 +68,7 @@ class Curves:
         accessor for them, not :meth:`at_budget`.
         """
         if not 1 <= k <= self.n_columns:
-            raise IndexError(
-                f"{k} experiments outside 1..{self.n_columns} for this curve"
-            )
+            raise IndexError(f"{k} experiments outside 1..{self.n_columns} for this curve")
         return self.values[:, k - 1]
 
     def final(self) -> np.ndarray:
@@ -119,8 +117,16 @@ class RunFile:
         self.n_top: dict[str, int] = {}
         self.n_pool: dict[str, int] = {}
 
-    def add(self, campaign: str, method: str, curves: Curves, n_top: int,
-            n_pool: int, traces: np.ndarray, fingerprint: str):
+    def add(
+        self,
+        campaign: str,
+        method: str,
+        curves: Curves,
+        n_top: int,
+        n_pool: int,
+        traces: np.ndarray,
+        fingerprint: str,
+    ):
         self.validate_campaign(campaign, n_top, n_pool, fingerprint)
         self.curves[(campaign, method)] = curves
         self.traces[(campaign, method)] = np.asarray(traces, dtype=np.int32)
@@ -128,8 +134,7 @@ class RunFile:
         self.n_pool[campaign] = n_pool
         self.fingerprint[campaign] = fingerprint
 
-    def validate_campaign(self, campaign: str, n_top: int, n_pool: int,
-                          fingerprint: str) -> None:
+    def validate_campaign(self, campaign: str, n_top: int, n_pool: int, fingerprint: str) -> None:
         """Refuse to attach one campaign name to two different pools."""
         conflicts = []
         current_fp = self.fingerprint.get(campaign)
@@ -146,7 +151,7 @@ class RunFile:
                 f"campaign {campaign!r} refers to incompatible pools: "
                 + "; ".join(conflicts)
                 + ". Use a different TAG or discard the superseded run; its trace "
-                  "indices cannot be merged safely."
+                "indices cannot be merged safely."
             )
 
     @property
@@ -163,10 +168,10 @@ class RunFile:
     def save(self, path: str):
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         payload = {f"{ds}|{m}": c.values for (ds, m), c in self.curves.items()}
-        payload |= {f"{ds}|{m}|{self.KEY_TRACE}": t
-                    for (ds, m), t in self.traces.items()}
-        payload |= {f"{ds}|{self.KEY_FINGERPRINT}": np.array(fp)
-                    for ds, fp in self.fingerprint.items()}
+        payload |= {f"{ds}|{m}|{self.KEY_TRACE}": t for (ds, m), t in self.traces.items()}
+        payload |= {
+            f"{ds}|{self.KEY_FINGERPRINT}": np.array(fp) for ds, fp in self.fingerprint.items()
+        }
         payload |= {f"{ds}|{self.KEY_NTOP}": np.array(n) for ds, n in self.n_top.items()}
         payload |= {f"{ds}|{self.KEY_NPOOL}": np.array(n) for ds, n in self.n_pool.items()}
         payload[self.KEY_PROTOCOL] = np.array(self.protocol.to_json())
@@ -209,18 +214,22 @@ class RunFile:
                 f"Use a different TAG, or re-run with the saved settings: "
                 f"{prior.protocol.to_json()}"
             )
-        for (ds, method) in prior.curves:
+        for ds, method in prior.curves:
             if (ds, method) not in self.curves:
-                self.validate_campaign(
-                    ds, prior.n_top[ds], prior.n_pool[ds], prior.fingerprint[ds]
-                )
+                self.validate_campaign(ds, prior.n_top[ds], prior.n_pool[ds], prior.fingerprint[ds])
         kept = []
         for (ds, method), curves in prior.curves.items():
             if (ds, method) in self.curves:
                 continue
-            self.add(ds, method, curves, prior.n_top[ds], prior.n_pool[ds],
-                     traces=prior.traces[(ds, method)],
-                     fingerprint=prior.fingerprint[ds])
+            self.add(
+                ds,
+                method,
+                curves,
+                prior.n_top[ds],
+                prior.n_pool[ds],
+                traces=prior.traces[(ds, method)],
+                fingerprint=prior.fingerprint[ds],
+            )
             kept.append(f"{ds}|{method}")
         if kept:
             log(f"  merged {len(kept)} curve set(s) from {os.path.basename(path)}")

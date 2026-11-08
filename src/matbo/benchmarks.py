@@ -26,16 +26,17 @@ def _loop(**kwargs) -> Protocol:
     """A Protocol with every comparability-relevant field stated."""
     missing = _REQUIRED_LOOP - set(kwargs)
     if missing:
-        raise ValueError(
-            f"benchmark loop must state every field; missing {sorted(missing)}"
-        )
+        raise ValueError(f"benchmark loop must state every field; missing {sorted(missing)}")
     return Protocol(**kwargs)
 
 
 # Shared by both benchmarks. The horizon and the ensemble size come from each
 # source, so every entry states those itself.
 _SAMPLING = dict(
-    n_initial=2, top_frac=0.05, init_regime="random", init_frac=None,
+    n_initial=2,
+    top_frac=0.05,
+    init_regime="random",
+    init_frac=None,
     metric="topcount",
 )
 
@@ -75,71 +76,75 @@ def _register(bench: Benchmark) -> Benchmark:
 # Liang et al.'s pools and loop: 50 ensembles from their seed list, run until
 # the pool is exhausted (`for i in np.arange(len(index_learn))` in their code).
 # n_steps and scale_budget are inert under exhaust but apply with EXHAUST=0.
-LIANG = _register(Benchmark(
-    name="liang",
-    pool=PoolRules(
-        follows="Liang et al., npj Comput. Mater. 7, 188 (2021)",
-        replicates="unique-mean",
-        order="grouped",
-        direction="per-campaign",
-        constraints="unconstrained",
-        not_reproduced=(),
-    ),
-    loop=_loop(**_SAMPLING, n_seeds=50, n_steps=20, scale_budget=True, exhaust=True),
-    note="the reference protocol, reproduced end to end",
-))
+LIANG = _register(
+    Benchmark(
+        name="liang",
+        pool=PoolRules(
+            follows="Liang et al., npj Comput. Mater. 7, 188 (2021)",
+            replicates="unique-mean",
+            order="grouped",
+            direction="per-campaign",
+            constraints="unconstrained",
+            not_reproduced=(),
+        ),
+        loop=_loop(**_SAMPLING, n_seeds=50, n_steps=20, scale_budget=True, exhaust=True),
+        note="the reference protocol, reproduced end to end",
+    )
+)
 
 # Every row Olympus ships, in shipped order, with the config's direction and
 # declared constraints. The loop is Hase et al.'s as far as a finite pool
 # allows: 100 seeds, best value so far, run to the pool's end in place of their
 # 10,000 emulator evaluations.
-OLYMPUS = _register(Benchmark(
-    name="olympus",
-    pool=PoolRules(
-        follows="Hase et al., Mach. Learn.: Sci. Technol. 2, 035021 -- bundled datasets",
-        replicates="keep",
-        order="source",
-        direction="config-default-goal",
-        constraints="declared",
-        not_reproduced=(
-            "Olympus's emulator protocol. The shipped emulators are TensorFlow 1 "
-            "checkpoints, and `olymp` pins tensorflow==1.15, which has no wheel "
-            "for Python 3.11 or macOS arm64. Running them would also require "
-            "every surrogate to optimise an acquisition over a continuous space "
-            "instead of ranking a finite pool, which is a different benchmark.",
-            "Olympus's train/validate/test split and cross-validation folds, "
-            "which exist to fit that emulator. The whole dataset is the pool here.",
-            "Olympus's first two evaluations. Their planners choose from "
-            "evaluation 1; here evaluations 1-2 are the shared random initial "
-            "design. At checkpoint 1 every arm is therefore identical, and at 3 "
-            "only one acquisition separates them.",
-            "Olympus's budget of 10,000 evaluations, which exceeds every pool "
-            "(66-1386 rows). Checkpoints 3000 and 10000 are unreachable on all "
-            "ten campaigns, and 1000 on all but hplc, photo_pce10 and photo_wf3. "
-            "Each run measures every candidate, the deepest horizon a pool allows.",
+OLYMPUS = _register(
+    Benchmark(
+        name="olympus",
+        pool=PoolRules(
+            follows="Hase et al., Mach. Learn.: Sci. Technol. 2, 035021 -- bundled datasets",
+            replicates="keep",
+            order="source",
+            direction="config-default-goal",
+            constraints="declared",
+            not_reproduced=(
+                "Olympus's emulator protocol. The shipped emulators are TensorFlow 1 "
+                "checkpoints, and `olymp` pins tensorflow==1.15, which has no wheel "
+                "for Python 3.11 or macOS arm64. Running them would also require "
+                "every surrogate to optimise an acquisition over a continuous space "
+                "instead of ranking a finite pool, which is a different benchmark.",
+                "Olympus's train/validate/test split and cross-validation folds, "
+                "which exist to fit that emulator. The whole dataset is the pool here.",
+                "Olympus's first two evaluations. Their planners choose from "
+                "evaluation 1; here evaluations 1-2 are the shared random initial "
+                "design. At checkpoint 1 every arm is therefore identical, and at 3 "
+                "only one acquisition separates them.",
+                "Olympus's budget of 10,000 evaluations, which exceeds every pool "
+                "(66-1386 rows). Checkpoints 3000 and 10000 are unreachable on all "
+                "ten campaigns, and 1000 on all but hplc, photo_pce10 and photo_wf3. "
+                "Each run measures every candidate, the deepest horizon a pool allows.",
+            ),
         ),
-    ),
-    loop=_loop(
-        **(_SAMPLING | dict(n_seeds=100, metric="best-value")),
-        seeds=_OLYMPUS_SEEDS,
-        n_steps=20, scale_budget=True, exhaust=True,
-    ),
-    checkpoints=OLYMPUS_CHECKPOINTS,
-    note=(
-        "Hase et al.'s rows verbatim, under their loop as far as a finite pool "
-        "allows: 100 seeds, best value so far at their nine checkpoints, run to "
-        "the end of the pool in place of their 10,000 emulator evaluations. "
-        "They optimise a continuous space through an emulator; we rank a "
-        "finite pool"
-    ),
-))
+        loop=_loop(
+            **(_SAMPLING | dict(n_seeds=100, metric="best-value")),
+            seeds=_OLYMPUS_SEEDS,
+            n_steps=20,
+            scale_budget=True,
+            exhaust=True,
+        ),
+        checkpoints=OLYMPUS_CHECKPOINTS,
+        note=(
+            "Hase et al.'s rows verbatim, under their loop as far as a finite pool "
+            "allows: 100 seeds, best value so far at their nine checkpoints, run to "
+            "the end of the pool in place of their 10,000 emulator evaluations. "
+            "They optimise a continuous space through an emulator; we rank a "
+            "finite pool"
+        ),
+    )
+)
 
 
 def get(name: str) -> Benchmark:
     if name not in BENCHMARKS:
-        raise KeyError(
-            f"unknown benchmark {name!r}; known: {', '.join(sorted(BENCHMARKS))}"
-        )
+        raise KeyError(f"unknown benchmark {name!r}; known: {', '.join(sorted(BENCHMARKS))}")
     return BENCHMARKS[name]
 
 

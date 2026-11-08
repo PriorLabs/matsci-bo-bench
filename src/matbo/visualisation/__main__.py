@@ -9,8 +9,7 @@ from . import FIGURES, style
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("figures", nargs="*",
-                        help="figure numbers: 1 2 D.1 ... D.9 (default: all)")
+    parser.add_argument("figures", nargs="*", help="figure numbers: 1 2 D.1 ... D.9 (default: all)")
     parser.add_argument("--out", type=Path, default=Path("figures/paper"))
     args = parser.parse_args()
     unknown = set(args.figures) - FIGURES.keys()

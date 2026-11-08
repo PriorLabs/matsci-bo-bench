@@ -21,16 +21,17 @@ from matbo.protocol import Protocol
 from matbo.runner import curve_from_trace
 
 REFERENCE = Path(__file__).resolve().parent.parent / "reference_results"
-FOLDERS = sorted(p.name for p in REFERENCE.iterdir() if p.is_dir()) \
-    if REFERENCE.exists() else []
+FOLDERS = sorted(p.name for p in REFERENCE.iterdir() if p.is_dir()) if REFERENCE.exists() else []
 
 
 def _columns(row: dict, prefix: str) -> list[str]:
     """`s1..sN` in numeric order, stopping at the row's own end."""
-    keys = [k for k in row
-            if k.startswith(prefix) and k[len(prefix):].isdigit()
-            and row[k] not in ("", None)]
-    return sorted(keys, key=lambda k: int(k[len(prefix):]))
+    keys = [
+        k
+        for k in row
+        if k.startswith(prefix) and k[len(prefix) :].isdigit() and row[k] not in ("", None)
+    ]
+    return sorted(keys, key=lambda k: int(k[len(prefix) :]))
 
 
 def _arms(folder: Path) -> list[Path]:
@@ -45,9 +46,7 @@ def test_reference_traces_decode_against_the_pool_they_index(folder_name):
     folder = REFERENCE / folder_name
     meta = folder / "protocol.json"
     assert meta.exists(), f"{folder_name} has no protocol.json"
-    protocol = Protocol.from_json(
-        json.dumps(json.loads(meta.read_text())["protocol"])
-    )
+    protocol = Protocol.from_json(json.dumps(json.loads(meta.read_text())["protocol"]))
 
     arms = _arms(folder)
     if not arms:
@@ -114,10 +113,7 @@ def test_every_arm_in_the_record_resolves_in_the_registry():
     from matbo.methods import build_registry
 
     registered = set(build_registry().methods)
-    found = {
-        path.name.split("__")[0]
-        for path in REFERENCE.glob("*/*.trace.csv")
-    }
+    found = {path.name.split("__")[0] for path in REFERENCE.glob("*/*.trace.csv")}
     assert found, "no traces found"
     orphaned = sorted(found - registered)
     assert not orphaned, f"arms in the record with no registry entry: {orphaned}"

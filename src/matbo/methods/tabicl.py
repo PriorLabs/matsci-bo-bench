@@ -54,9 +54,7 @@ class TabICLSurrogate:
             flat = np.full(len(cand), float(y_obs.mean()) if y_obs.size else 0.0)
             return Posterior(
                 mean=flat,
-                quantiles=lambda levels: np.repeat(
-                    flat[:, None], len(np.asarray(levels)), axis=1
-                ),
+                quantiles=lambda levels: np.repeat(flat[:, None], len(np.asarray(levels)), axis=1),
                 exact_ucb=lambda _beta: flat.copy(),
             )
 
@@ -71,7 +69,6 @@ class TabICLSurrogate:
             )
 
         def exact_ucb(beta: float) -> np.ndarray:
-            return np.asarray(quantiles(np.array([float(norm.cdf(beta))])),
-                              dtype=np.float64)[:, 0]
+            return np.asarray(quantiles(np.array([float(norm.cdf(beta))])), dtype=np.float64)[:, 0]
 
         return Posterior(mean=mean, quantiles=quantiles, exact_ucb=exact_ucb)

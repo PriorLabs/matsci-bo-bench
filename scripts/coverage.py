@@ -46,8 +46,10 @@ def main() -> int:
         done = sum(1 for a in arms for c in campaigns if held.get((a, c), 0) >= want)
         total = len(arms) * len(campaigns)
         missing += total - done
-        print(f"\n{bench_name.upper()}  {len(campaigns)} campaigns x {len(arms)} arms "
-              f"= {total} cells, {done} done at {want} seeds")
+        print(
+            f"\n{bench_name.upper()}  {len(campaigns)} campaigns x {len(arms)} arms "
+            f"= {total} cells, {done} done at {want} seeds"
+        )
         width = max(len(a) for a in arms) + 1
         print(f"  {'':{width}s}" + "".join(f"{c[:9]:>10s}" for c in campaigns))
         for arm in arms:

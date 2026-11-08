@@ -7,7 +7,13 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import NullFormatter, PercentFormatter
 
 from matbo.analysis.field import (
-    BUDGETS, DENSE_BUDGETS, FIELD, METRICS, campaign_band, family, score,
+    BUDGETS,
+    DENSE_BUDGETS,
+    FIELD,
+    METRICS,
+    campaign_band,
+    family,
+    score,
 )
 
 from . import style as S
@@ -28,11 +34,15 @@ def _budget_legend(fig, chosen):
     families = list(S.HUE)
     used = {a.rsplit("-", 1)[1] for arms in chosen for a in arms if a != "Random"}
     rules = [r for r in S.RULE_LS if r in used]
-    rows = [[Line2D([], [], ls="", label="surrogate")] +
-            [Line2D([], [], color=S.HUE[f], marker=S.MARK[f], mfc="white", ms=4,
-                    label=f) for f in families],
-            [Line2D([], [], ls="", label="acquisition")] +
-            [Line2D([], [], color="0.3", ls=S.RULE_LS[r], label=r) for r in rules]]
+    rows = [
+        [Line2D([], [], ls="", label="surrogate")]
+        + [
+            Line2D([], [], color=S.HUE[f], marker=S.MARK[f], mfc="white", ms=4, label=f)
+            for f in families
+        ],
+        [Line2D([], [], ls="", label="acquisition")]
+        + [Line2D([], [], color="0.3", ls=S.RULE_LS[r], label=r) for r in rules],
+    ]
     width = max(map(len, rows))
     rows = [row + [Line2D([], [], ls="", label="")] * (width - len(row)) for row in rows]
     return S.legend(fig, [h for pair in zip(*rows) for h in pair], ncol=width, fontsize=8.5)
@@ -53,14 +63,24 @@ def budget(metric=None):
         for arm in arms:
             j, f = FIELD.index(arm), family(arm)
             ax.fill_between(BUDGETS, lo[:, j], hi[:, j], color=S.HUE[f], alpha=0.10, lw=0)
-            ax.plot(BUDGETS, mean[:, j], color=S.HUE[f], marker=S.MARK[f],
-                    ls="-" if arm == "Random" else S.RULE_LS[arm.rsplit("-", 1)[1]],
-                    ms=5.5, mfc="white", mew=1.4, lw=1.9, label=arm, zorder=_z(f))
+            ax.plot(
+                BUDGETS,
+                mean[:, j],
+                color=S.HUE[f],
+                marker=S.MARK[f],
+                ls="-" if arm == "Random" else S.RULE_LS[arm.rsplit("-", 1)[1]],
+                ms=5.5,
+                mfc="white",
+                mew=1.4,
+                lw=1.9,
+                label=arm,
+                zorder=_z(f),
+            )
         S.tidy(ax)
         ax.axhline(1, color="0.5", ls=(0, (1, 3)), lw=0.7)
         ax.set_xscale("log")
         ax.xaxis.set_minor_formatter(NullFormatter())
-        ax.set_xticks(BUDGETS, [f"{100*b:.0f}%" for b in BUDGETS])
+        ax.set_xticks(BUDGETS, [f"{100 * b:.0f}%" for b in BUDGETS])
         ax.set_xlim(0.047, 0.52)
         ax.set_ylim(-0.03, 1.08)
         ax.set_xlabel("budget (% of pool)")
@@ -84,7 +104,7 @@ def ranking():
         ax.scatter(ranked, y, color=colors, s=5, zorder=3)
         S.tidy(ax)
         ax.yaxis.grid(False)
-        ax.spines['left'].set_visible(False)
+        ax.spines["left"].set_visible(False)
         ax.set_yticks(y, ranked.index, fontsize=6.5)
         ax.tick_params(axis="y", length=0)
         ax.set_xlim(0, 1)
@@ -103,21 +123,40 @@ def all_arms(benchmark):
     mean = np.nanmean(score(benchmark).ni(DENSE_BUDGETS), axis=0)
     fig, ax = plt.subplots(figsize=(WIDTH, 4.5))
     members = {f: [a for a in FIELD if family(a) == f] for f in S.HUE}
-    color = {a: c for f, arms in members.items() for a, c in zip(arms, S.shades(S.HUE[f], len(arms)))}
+    color = {
+        a: c for f, arms in members.items() for a, c in zip(arms, S.shades(S.HUE[f], len(arms)))
+    }
     for j, arm in enumerate(FIELD):
-        ax.plot(DENSE_BUDGETS, mean[:, j], color=color[arm],
-                lw=1.0 if family(arm) == "GP" else 2.0, alpha=0.9, label=arm, zorder=_z(family(arm)))
+        ax.plot(
+            DENSE_BUDGETS,
+            mean[:, j],
+            color=color[arm],
+            lw=1.0 if family(arm) == "GP" else 2.0,
+            alpha=0.9,
+            label=arm,
+            zorder=_z(family(arm)),
+        )
     S.tidy(ax)
     ax.axhline(0, color="0.2", ls=(0, (4, 3)), lw=0.8)
     ax.axhline(1, color="0.5", ls=(0, (1, 3)), lw=0.7)
-    ax.set_xlim(.045, .51)
-    ax.set_ylim(-.1, 1.06)
-    ax.set_xticks(np.arange(.05, .51, .05))
+    ax.set_xlim(0.045, 0.51)
+    ax.set_ylim(-0.1, 1.06)
+    ax.set_xticks(np.arange(0.05, 0.51, 0.05))
     ax.xaxis.set_major_formatter(PercentFormatter(1, decimals=0))
     ax.set_xlabel("budget (% of pool)")
     ax.set_ylabel(NI_LABEL)
-    ax.set_title(f"{S.tt(benchmark)}: {LABEL[METRICS[benchmark]]}", loc="left", fontweight="bold", pad=34)
-    ax.legend(handles=S.family_handles(), loc="lower left", bbox_to_anchor=(0, 1.01), ncol=6,
-              fontsize=9, frameon=True, framealpha=1, edgecolor="0.75")
+    ax.set_title(
+        f"{S.tt(benchmark)}: {LABEL[METRICS[benchmark]]}", loc="left", fontweight="bold", pad=34
+    )
+    ax.legend(
+        handles=S.family_handles(),
+        loc="lower left",
+        bbox_to_anchor=(0, 1.01),
+        ncol=6,
+        fontsize=9,
+        frameon=True,
+        framealpha=1,
+        edgecolor="0.75",
+    )
     fig.tight_layout()
     return fig

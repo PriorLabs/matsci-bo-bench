@@ -36,8 +36,10 @@ def check_pools() -> int:
             try:
                 campaign = L.load(name)
             except FileNotFoundError as exc:
-                print(f"{name:18s}{'-':>7s}{'-':>8s}{'-':>7s}{'-':>5s}  "
-                      f"unavailable: {str(exc).splitlines()[0][:52]}")
+                print(
+                    f"{name:18s}{'-':>7s}{'-':>8s}{'-':>7s}{'-':>5s}  "
+                    f"unavailable: {str(exc).splitlines()[0][:52]}"
+                )
                 continue
             published = provenance.PAPER_POOL.get(name)
             raw = campaign._meta.get("raw_rows")
@@ -81,8 +83,10 @@ def check_random_baseline(run: RunFile) -> list[float]:
             print(f"{name:18s}{n:7d}{observed:8.2f}{mu:10.2f}{z:7.2f}")
     if zs:
         verdict = "ok" if abs(np.mean(zs)) < 1.5 else "INVESTIGATE"
-        print(f"\nmean z over {len(zs)} checkpoints: {np.mean(zs):+.2f} ({verdict}; "
-              "|mean z| < 1.5 is consistent with the analytic baseline)")
+        print(
+            f"\nmean z over {len(zs)} checkpoints: {np.mean(zs):+.2f} ({verdict}; "
+            "|mean z| < 1.5 is consistent with the analytic baseline)"
+        )
     return zs
 
 
@@ -95,8 +99,10 @@ def main() -> int:
         if run.protocol.metric == "topcount":
             check_random_baseline(run)
         else:
-            print(f"baseline check skipped: it needs TopCount curves, "
-                  f"this run is {run.protocol.metric}")
+            print(
+                f"baseline check skipped: it needs TopCount curves, "
+                f"this run is {run.protocol.metric}"
+            )
     elif path:
         print(f"\nno run at {path}")
     else:

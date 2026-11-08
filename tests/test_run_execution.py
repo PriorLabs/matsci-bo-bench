@@ -43,16 +43,22 @@ def test_checkpoint_during_a_second_pass_keeps_the_first(tmp_path):
     campaign = L.load("Perovskite")
     protocol = Protocol(n_seeds=2, n_steps=3, device="cpu")
 
-    first = run_suite([campaign], build_registry().select(["Random"]), protocol,
-                      log=lambda _m: None)
+    first = run_suite(
+        [campaign], build_registry().select(["Random"]), protocol, log=lambda _m: None
+    )
     first.save(path)
 
     prior = RunFile(protocol)
     prior.merge_from(path, log=lambda _m: None)
     seen = []
-    run_suite([campaign], build_registry().select(["GP-iso-EI"]), protocol,
-              log=lambda _m: None, into=prior,
-              checkpoint=lambda r: seen.append(sorted(r.methods)))
+    run_suite(
+        [campaign],
+        build_registry().select(["GP-iso-EI"]),
+        protocol,
+        log=lambda _m: None,
+        into=prior,
+        checkpoint=lambda r: seen.append(sorted(r.methods)),
+    )
     assert seen, "checkpoint never fired"
     assert seen[0] == ["GP-iso-EI", "Random"], f"checkpoint dropped the first pass: {seen[0]}"
 
@@ -69,14 +75,17 @@ def test_partial_checkpoints_keep_arms_row_aligned(tmp_path):
     def checkpoint(run):
         run.save(path)
         saved = RunFile.load(path)
-        seen.append(tuple(saved.curves[("Perovskite", m)].n_seeds
-                          for m in ("GP-iso-EI", "Random")))
+        seen.append(tuple(saved.curves[("Perovskite", m)].n_seeds for m in ("GP-iso-EI", "Random")))
 
-    run_suite([L.load("Perovskite")],
-              build_registry().select(["GP-iso-EI", "Random"]),
-              Protocol(n_seeds=12, n_steps=3, device="cpu"),
-              log=lambda _m: None, checkpoint=checkpoint, workers=2,
-              checkpoint_seeds=4)
+    run_suite(
+        [L.load("Perovskite")],
+        build_registry().select(["GP-iso-EI", "Random"]),
+        Protocol(n_seeds=12, n_steps=3, device="cpu"),
+        log=lambda _m: None,
+        checkpoint=checkpoint,
+        workers=2,
+        checkpoint_seeds=4,
+    )
 
     assert len(seen) > 1, f"expected mid-campaign saves, got {seen}"
     assert all(a == b for a, b in seen), f"arms fell out of alignment: {seen}"
@@ -96,13 +105,11 @@ def test_seed_shards_are_the_same_experiment_as_the_whole_ensemble():
     rows = []
     for window in ((0, 2), (2, 4)):
         shard = dataclasses.replace(whole, seed_slice=window)
-        assert shard.active_seeds == whole.active_seeds[window[0]:window[1]]
+        assert shard.active_seeds == whole.active_seeds[window[0] : window[1]]
         part = run_suite([campaign], methods, shard, log=lambda _m: None)
         rows.append(part.curves[("Perovskite", "Random")].values)
 
-    np.testing.assert_array_equal(
-        np.vstack(rows), full.curves[("Perovskite", "Random")].values
-    )
+    np.testing.assert_array_equal(np.vstack(rows), full.curves[("Perovskite", "Random")].values)
 
 
 def test_a_seed_slice_outside_the_ensemble_is_refused():
@@ -123,9 +130,14 @@ def test_smoke_thirty_acquisitions_end_to_end(tmp_path):
     protocol = Protocol(n_seeds=3, n_steps=30, scale_budget=False, device="cpu")
     path = str(tmp_path / "curves.npz")
 
-    run = run_suite([campaign], build_registry().select(["Random", "GP-iso-EI"]),
-                    protocol, log=lambda _m: None,
-                    checkpoint=lambda r: r.save(path), workers=2)
+    run_suite(
+        [campaign],
+        build_registry().select(["Random", "GP-iso-EI"]),
+        protocol,
+        log=lambda _m: None,
+        checkpoint=lambda r: r.save(path),
+        workers=2,
+    )
 
     saved = RunFile.load(path)
     for arm in ("Random", "GP-iso-EI"):
@@ -134,9 +146,8 @@ def test_smoke_thirty_acquisitions_end_to_end(tmp_path):
         assert curves.values.shape == (3, protocol.n_initial + 30)
         assert np.all(np.diff(curves.values, axis=1) >= 0), "TopCount fell"
         for row, trace in zip(curves.values, saved.traces[key], strict=True):
-            np.testing.assert_array_equal(
-                curve_from_trace(trace, campaign, protocol), row
-            )
+            np.testing.assert_array_equal(curve_from_trace(trace, campaign, protocol), row)
     # A surrogate that silently scored as Random would pass everything above.
-    assert not np.array_equal(saved.traces[("Perovskite", "Random")],
-                              saved.traces[("Perovskite", "GP-iso-EI")])
+    assert not np.array_equal(
+        saved.traces[("Perovskite", "Random")], saved.traces[("Perovskite", "GP-iso-EI")]
+    )

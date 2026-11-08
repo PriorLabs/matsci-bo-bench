@@ -46,8 +46,9 @@ def names(families: list[str] | None = None, only: list[str] | None = None) -> l
     if only:
         keys = [k.strip().lower() for k in only]
         exact = {n for n in out if n.lower() in keys}
-        loose = {n for n in out
-                 if any(k in n.lower() for k in keys if k not in {m.lower() for m in out})}
+        loose = {
+            n for n in out if any(k in n.lower() for k in keys if k not in {m.lower() for m in out})
+        }
         out = [n for n in out if n in exact | loose]
     return out
 

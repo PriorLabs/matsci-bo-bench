@@ -37,8 +37,7 @@ def _check_protocols(runs) -> None:
     """Every source must agree on the loop, seed window aside."""
     base_path, base = runs[0]
     for path, run in runs[1:]:
-        clashes = [k for k in base.protocol.incompatible_with(run.protocol)
-                   if k != "seed_slice"]
+        clashes = [k for k in base.protocol.incompatible_with(run.protocol) if k != "seed_slice"]
         if clashes:
             sys.exit(
                 f"REFUSED, nothing written -- {path} differs from {base_path} in "
@@ -72,9 +71,11 @@ def _stack(key, shards, n_seeds: int):
 
     unsharded = [p for sl, _, _, p in shards if sl is None]
     if unsharded:
-        sys.exit(f"REFUSED -- {campaign}|{method} has both a whole-ensemble run "
-                 f"({unsharded[0]}) and {len(shards) - len(unsharded)} shard(s); "
-                 "one of them is the run you want, not both.")
+        sys.exit(
+            f"REFUSED -- {campaign}|{method} has both a whole-ensemble run "
+            f"({unsharded[0]}) and {len(shards) - len(unsharded)} shard(s); "
+            "one of them is the run you want, not both."
+        )
 
     ordered = sorted(shards, key=lambda s: s[0][0])
     cursor = 0
@@ -94,8 +95,10 @@ def _stack(key, shards, n_seeds: int):
 
     widths = {c.n_columns for _, c, _, _ in ordered}
     if len(widths) > 1:
-        sys.exit(f"REFUSED -- {campaign}|{method}: shards have {sorted(widths)} columns; "
-                 "they were run to different budgets.")
+        sys.exit(
+            f"REFUSED -- {campaign}|{method}: shards have {sorted(widths)} columns; "
+            "they were run to different budgets."
+        )
 
     values = np.vstack([c.values for _, c, _, _ in ordered])
     stacked_trace = np.vstack([t for _, _, t, _ in ordered])
@@ -107,8 +110,10 @@ def main() -> int:
     paths = sys.argv[1:]
     out = os.environ.get("OUT")
     if not out or not paths:
-        sys.exit("usage: OUT=<dest curves.npz> python scripts/merge_runs.py "
-                 "<curves.npz> [<curves.npz> ...]")
+        sys.exit(
+            "usage: OUT=<dest curves.npz> python scripts/merge_runs.py "
+            "<curves.npz> [<curves.npz> ...]"
+        )
 
     runs = _load(paths)
     _check_protocols(runs)
@@ -123,8 +128,7 @@ def main() -> int:
     fingerprint: dict[str, str] = {}
     for path, run in runs:
         for key, curves in run.curves.items():
-            groups[key].append((run.protocol.seed_slice, curves,
-                                run.traces[key], path))
+            groups[key].append((run.protocol.seed_slice, curves, run.traces[key], path))
         n_top |= run.n_top
         n_pool |= run.n_pool
         fingerprint |= run.fingerprint
@@ -137,18 +141,30 @@ def main() -> int:
             sharded += 1
         if short:
             partial.append(f"{campaign}|{method} ({short})")
-        merged.add(campaign, method, curves, n_top[campaign], n_pool[campaign],
-                   traces=trace, fingerprint=fingerprint[campaign])
+        merged.add(
+            campaign,
+            method,
+            curves,
+            n_top[campaign],
+            n_pool[campaign],
+            traces=trace,
+            fingerprint=fingerprint[campaign],
+        )
 
     merged.save(out)
-    print(f"{out}: {len(merged.curves)} curve set(s) from {len(paths)} file(s), "
-          f"{len(merged.campaigns)} campaign(s), {len(merged.methods)} arm(s)")
+    print(
+        f"{out}: {len(merged.curves)} curve set(s) from {len(paths)} file(s), "
+        f"{len(merged.campaigns)} campaign(s), {len(merged.methods)} arm(s)"
+    )
     if sharded:
         print(f"  {sharded} curve set(s) stitched from seed shards")
     if partial:
         # export_reference.py refuses these without ALLOW_PARTIAL.
-        print(f"  PARTIAL ({len(partial)}): " + ", ".join(partial[:6])
-              + (" ..." if len(partial) > 6 else ""))
+        print(
+            f"  PARTIAL ({len(partial)}): "
+            + ", ".join(partial[:6])
+            + (" ..." if len(partial) > 6 else "")
+        )
     return 0
 
 

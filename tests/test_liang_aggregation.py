@@ -24,8 +24,8 @@ from matbo.loaders.paths import LIANG_DIR
 from matbo.results import Curves
 
 REFERENCE = LIANG_DIR / "reference_gp_m52_lcb2.npy"
-REF_POOL, REF_TOP = 600, 30      # Crossed barrel, top 5%
-BAND = (0.05, 0.95)              # D.1's 5-95% band
+REF_POOL, REF_TOP = 600, 30  # Crossed barrel, top 5%
+BAND = (0.05, 0.95)  # D.1's 5-95% band
 
 
 def staircase_ensemble(n_runs: int, n_cycles: int, n_top: int) -> np.ndarray:
@@ -61,9 +61,11 @@ def their_avg(x, seeds, n_fold: int):
                 avg_run += np.array(x[j])
             l_avg_runs.append(avg_run / fold_size)
     stacked = np.array(l_avg_runs)
-    return (np.median(stacked, axis=0),
-            np.quantile(stacked, BAND[0], axis=0),
-            np.quantile(stacked, BAND[1], axis=0))
+    return (
+        np.median(stacked, axis=0),
+        np.quantile(stacked, BAND[0], axis=0),
+        np.quantile(stacked, BAND[1], axis=0),
+    )
 
 
 def test_the_shuffle_seeds_are_their_published_list():
@@ -79,7 +81,7 @@ def test_fold_means_reproduce_their_notebook_on_their_own_curves():
     counts = np.load(REFERENCE, allow_pickle=True)
     top_pct = np.ones((len(counts), REF_POOL))
     for i, run in enumerate(counts):
-        top_pct[i, :len(run)] = np.asarray(run, dtype=float) / REF_TOP
+        top_pct[i, : len(run)] = np.asarray(run, dtype=float) / REF_TOP
     want = their_avg(top_pct, AGGREGATION_SEEDS, n_fold=len(top_pct) // FOLD_SIZE)
     for ours, theirs in zip(aggregate(top_pct), want):
         np.testing.assert_allclose(ours, theirs)
@@ -90,20 +92,18 @@ def test_af_curve_agrees_with_the_scalar_at_their_goal():
     levels, af = af_curve(curves.mean() / 10, n_pool=300)
     at_80 = af[np.argmin(np.abs(levels - 0.8))]
     assert levels[np.argmin(np.abs(levels - 0.8))] == pytest.approx(0.8)
-    assert at_80 == pytest.approx(
-        acceleration_factor(curves, n_top=10, n_pool=300, level=0.8))
+    assert at_80 == pytest.approx(acceleration_factor(curves, n_top=10, n_pool=300, level=0.8))
 
 
 def test_a_level_reached_exactly_counts_as_reached():
     """7.2 of 9 top candidates is Top% = 0.8, though the float falls just short."""
     n_top, n_pool, hit = 9, 178, 38
     counts = np.zeros((50, 60))
-    counts[:, hit - 1:] = 7.2
-    counts[:, :hit - 1] = 7.0
+    counts[:, hit - 1 :] = 7.2
+    counts[:, : hit - 1] = 7.0
     curves = Curves(values=counts, n_initial=2)
     assert curves.mean()[hit - 1] / n_top < 0.8, "expected the float to fall short"
-    assert acceleration_factor(curves, n_top, n_pool, 0.8) == pytest.approx(
-        0.8 * n_pool / hit)
+    assert acceleration_factor(curves, n_top, n_pool, 0.8) == pytest.approx(0.8 * n_pool / hit)
     levels, af = af_curve(curves.mean() / n_top, n_pool)
     assert af[np.argmin(np.abs(levels - 0.8))] == pytest.approx(0.8 * n_pool / hit)
 
@@ -116,7 +116,8 @@ def test_af_curve_and_scalar_agree_on_a_boundary_cell():
     percent = record.block("CatBoost-EI", "Perovskite")
     n_top = pool.n_top(0.05)
     scalar = acceleration_factor(
-        Curves(values=percent * n_top / 100.0, n_initial=2), n_top, pool.n, 0.8)
+        Curves(values=percent * n_top / 100.0, n_initial=2), n_top, pool.n, 0.8
+    )
     levels, af = af_curve((percent / 100.0).mean(axis=0), pool.n)
     assert af[np.argmin(np.abs(levels - 0.8))] == pytest.approx(scalar)
 

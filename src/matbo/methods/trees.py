@@ -22,9 +22,7 @@ class RandomForestSurrogate:
 
     def fit(self, req: ScoreRequest) -> Posterior:
         # One job: the runner already parallelises over (arm, seed).
-        rf = RandomForestRegressor(
-            n_estimators=self.n_estimators, random_state=req.seed, n_jobs=1
-        )
+        rf = RandomForestRegressor(n_estimators=self.n_estimators, random_state=req.seed, n_jobs=1)
         rf.fit(req.x_obs, req.y_obs)
         per_tree = np.stack([t.predict(req.x_cand) for t in rf.estimators_])
         return Posterior(mean=per_tree.mean(0), sd=per_tree.std(0).clip(1e-9))

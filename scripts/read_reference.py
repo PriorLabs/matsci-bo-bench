@@ -30,18 +30,27 @@ def main() -> int:
     ap.add_argument("benchmark")
     ap.add_argument("arm")
     ap.add_argument("campaign")
-    ap.add_argument("--metric", default=None,
-                    help="override the folder protocol's metric (topcount, best-value)")
+    ap.add_argument(
+        "--metric",
+        default=None,
+        help="override the folder protocol's metric (topcount, best-value)",
+    )
     ap.add_argument("--seed", type=int, default=None, help="one seed instead of the mean")
     args = ap.parse_args()
 
     folder = REFERENCE_DIR / args.benchmark
     path = folder / f"{args.arm}__{args.campaign.replace(' ', '_')}.trace.csv"
     if not path.exists():
-        sys.exit(f"no such record: {path}\n"
-                 f"  available arms on {args.campaign}: " + ", ".join(
-                     sorted(p.name.split('__')[0] for p in
-                            folder.glob(f"*__{args.campaign.replace(' ', '_')}.trace.csv"))))
+        sys.exit(
+            f"no such record: {path}\n"
+            f"  available arms on {args.campaign}: "
+            + ", ".join(
+                sorted(
+                    p.name.split("__")[0]
+                    for p in folder.glob(f"*__{args.campaign.replace(' ', '_')}.trace.csv")
+                )
+            )
+        )
 
     protocol = Protocol.from_json(
         json.dumps(json.loads((folder / "protocol.json").read_text())["protocol"])
@@ -60,8 +69,14 @@ def main() -> int:
                 )
             if args.seed is not None and int(row["seed"]) != args.seed:
                 continue
-            idx = sorted((k for k in row if k.startswith("s") and k[1:].isdigit()
-                          and row[k] not in ("", None)), key=lambda k: int(k[1:]))
+            idx = sorted(
+                (
+                    k
+                    for k in row
+                    if k.startswith("s") and k[1:].isdigit() and row[k] not in ("", None)
+                ),
+                key=lambda k: int(k[1:]),
+            )
             trace = np.array([int(row[k]) for k in idx])
             curves.append(curve_from_trace(trace, campaign, protocol))
             seeds.append(int(row["seed"]))
@@ -69,8 +84,10 @@ def main() -> int:
     if not curves:
         sys.exit(f"no rows matched (seed={args.seed})")
     arr = np.array(curves)
-    print(f"{args.benchmark}/{args.arm} on {args.campaign}: "
-          f"{len(seeds)} seed(s) x {arr.shape[1]} evaluations, metric={protocol.metric}")
+    print(
+        f"{args.benchmark}/{args.arm} on {args.campaign}: "
+        f"{len(seeds)} seed(s) x {arr.shape[1]} evaluations, metric={protocol.metric}"
+    )
     mean = arr.mean(axis=0)
     for n in (8, 16, 50, 100, arr.shape[1] - 1):
         if 0 < n < arr.shape[1]:

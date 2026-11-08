@@ -85,7 +85,9 @@ def run_campaign(
 
 
 def curve_from_trace(
-    trace: np.ndarray, campaign: Campaign, protocol: Protocol,
+    trace: np.ndarray,
+    campaign: Campaign,
+    protocol: Protocol,
 ) -> np.ndarray:
     """The protocol's metric along a trace.
 
@@ -120,8 +122,7 @@ def _run_one(job):
         # Surrogate libraries are imported only in workers, so the parent may
         # be unable to unpickle their exception classes.
         raise RuntimeError(
-            f"{method_name} seed {seed} on {campaign.name}: "
-            f"{type(exc).__name__}: {exc}"
+            f"{method_name} seed {seed} on {campaign.name}: {type(exc).__name__}: {exc}"
         ) from None
     return method_name, seed, result
 
@@ -140,8 +141,7 @@ def _complete_prefix(collected, methods, seeds):
     return prefix
 
 
-def _run_parallel(campaign, methods, protocol, inits, workers, log,
-                  partial=None, every_seeds=5):
+def _run_parallel(campaign, methods, protocol, inits, workers, log, partial=None, every_seeds=5):
     """Every (method, seed) of one campaign across a process pool.
 
     Returns the same runs as the sequential loop, in the protocol's seed order.
@@ -165,15 +165,16 @@ def _run_parallel(campaign, methods, protocol, inits, workers, log,
             if done == 1 or done % every == 0 or done == len(jobs):
                 elapsed = time.time() - started
                 eta = elapsed / done * (len(jobs) - done)
-                log(f"    {campaign.name}: {done}/{len(jobs)} runs "
+                log(
+                    f"    {campaign.name}: {done}/{len(jobs)} runs "
                     f"({100 * done // len(jobs)}%), {elapsed / 60:.0f}m elapsed, "
-                    f"~{eta / 60:.0f}m left")
+                    f"~{eta / 60:.0f}m left"
+                )
             if partial is not None:
                 prefix = _complete_prefix(collected, methods, list(inits))
                 if len(prefix) >= saved + every_seeds and len(prefix) < len(inits):
                     saved = len(prefix)
-                    partial({n: [collected[n][s] for s in prefix] for n in methods},
-                            len(prefix))
+                    partial({n: [collected[n][s] for s in prefix] for n in methods}, len(prefix))
     runs = {name: [collected[name][s] for s in inits] for name in methods}
     log(f"  {len(jobs)} runs on {workers} workers in {time.time() - started:.0f}s")
     return runs
@@ -224,10 +225,11 @@ def run_suite(
         def _store(name, results, _c=campaign, _t=n_top, _fp=fingerprint):
             """One arm's finished rows into the run; row i is seed i of the prefix."""
             run.add(
-                _c.name, name,
-                Curves(np.array([r.curve for r in results], dtype=float),
-                       protocol.n_initial),
-                _t, _c.n,
+                _c.name,
+                name,
+                Curves(np.array([r.curve for r in results], dtype=float), protocol.n_initial),
+                _t,
+                _c.n,
                 traces=np.array([r.trace for r in results], dtype=np.int32),
                 fingerprint=_fp,
             )
@@ -242,8 +244,16 @@ def run_suite(
             log(f"    checkpointed {n_done}/{_n} seeds of {_c.name}")
 
         if workers > 1:
-            runs = _run_parallel(campaign, methods, protocol, inits, workers, log,
-                                 partial=save_partial, every_seeds=checkpoint_seeds)
+            runs = _run_parallel(
+                campaign,
+                methods,
+                protocol,
+                inits,
+                workers,
+                log,
+                partial=save_partial,
+                every_seeds=checkpoint_seeds,
+            )
         else:
             runs = {m: [] for m in methods}
             for i, (seed, init_idx) in enumerate(inits.items(), start=1):
@@ -253,8 +263,11 @@ def run_suite(
                     result = run_campaign(method, campaign, init_idx, seed, protocol)
                     runs[name].append(result)
                     curve = result.curve
-                    reached = (f"{curve[-1]:.4g}" if protocol.metric == "best-value"
-                               else f"{curve[-1]:.0f}/{n_top}")
+                    reached = (
+                        f"{curve[-1]:.4g}"
+                        if protocol.metric == "best-value"
+                        else f"{curve[-1]:.0f}/{n_top}"
+                    )
                     line.append(f"{name} {reached} ({time.time() - t0:.0f}s)")
                 log("  ".join(line))
                 if i % checkpoint_seeds == 0 and i < len(inits):
@@ -262,10 +275,11 @@ def run_suite(
 
         for name, results in runs.items():
             _store(name, results)
-        width = max((len(r.trace) for results in runs.values() for r in results),
-                    default=0)
-        log(f"  traces: {len(runs)} arm(s) x {n_planned} seeds x {width} "
-            f"selections recorded, pool fingerprint {fingerprint}")
+        width = max((len(r.trace) for results in runs.values() for r in results), default=0)
+        log(
+            f"  traces: {len(runs)} arm(s) x {n_planned} seeds x {width} "
+            f"selections recorded, pool fingerprint {fingerprint}"
+        )
         for line in fit_failure_report():
             log(f"  {line}")
         if checkpoint:

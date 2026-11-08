@@ -19,18 +19,26 @@ from matbo.methods.base import Posterior, ScoreRequest
 #: geometric into the upper tail, where the integrand lives once the incumbent
 #: leads. Equal spacing would score every candidate whose top node falls below
 #: the incumbent as exactly 0.
-_EI_LEVELS = np.unique(np.concatenate([
-    np.linspace(0.0, 0.5, 25),
-    1.0 - np.geomspace(1e-6, 0.5, 56),
-    [1.0 - 1e-9],
-]))
+_EI_LEVELS = np.unique(
+    np.concatenate(
+        [
+            np.linspace(0.0, 0.5, 25),
+            1.0 - np.geomspace(1e-6, 0.5, 56),
+            [1.0 - 1e-9],
+        ]
+    )
+)
 
 #: Nodes for inverting the quantile function in PI, refined in both tails: the
 #: incumbent can cross the predictive anywhere.
-_PI_LEVELS = np.unique(np.concatenate([
-    np.geomspace(1e-6, 0.5, 56),
-    1.0 - np.geomspace(1e-6, 0.5, 56),
-]))
+_PI_LEVELS = np.unique(
+    np.concatenate(
+        [
+            np.geomspace(1e-6, 0.5, 56),
+            1.0 - np.geomspace(1e-6, 0.5, 56),
+        ]
+    )
+)
 
 #: The +/-1 sigma quantile levels of a standard normal.
 _ONE_SIGMA = np.array([0.158655, 0.841345])

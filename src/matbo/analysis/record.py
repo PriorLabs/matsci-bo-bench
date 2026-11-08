@@ -68,11 +68,18 @@ class Record:
             if seed in by_seed:
                 raise ValueError(f"{path.name}: duplicate seed {seed}")
             if row["pool_fingerprint"] != pool.fingerprint():
-                raise ValueError(f"{path.name}: trace on pool {row['pool_fingerprint']}, "
-                                 f"loader builds {pool.fingerprint()}")
-            keys = sorted((k for k in row
-                           if k.startswith("s") and k[1:].isdigit() and row[k] not in ("", None)),
-                          key=lambda k: int(k[1:]))
+                raise ValueError(
+                    f"{path.name}: trace on pool {row['pool_fingerprint']}, "
+                    f"loader builds {pool.fingerprint()}"
+                )
+            keys = sorted(
+                (
+                    k
+                    for k in row
+                    if k.startswith("s") and k[1:].isdigit() and row[k] not in ("", None)
+                ),
+                key=lambda k: int(k[1:]),
+            )
             trace = np.array([int(row[k]) for k in keys])
             if trace.min() < 0 or trace.max() >= pool.n:
                 raise ValueError(f"{path.name}: seed {seed} indexes outside the pool")
@@ -82,8 +89,10 @@ class Record:
             by_seed[seed] = row
         order = list(self.protocol.seeds)
         if set(by_seed) != set(order):
-            raise ValueError(f"{path.name}: missing seeds {sorted(set(order) - set(by_seed))[:5]}, "
-                             f"undeclared seeds {sorted(set(by_seed) - set(order))[:5]}")
+            raise ValueError(
+                f"{path.name}: missing seeds {sorted(set(order) - set(by_seed))[:5]}, "
+                f"undeclared seeds {sorted(set(by_seed) - set(order))[:5]}"
+            )
         return [by_seed[s] for s in order]
 
     def block(self, arm: str, campaign: str) -> np.ndarray:
@@ -92,9 +101,14 @@ class Record:
         Top% in percent for `topcount`; the oriented incumbent for `best-value`.
         """
         pool = self.campaign(campaign)
-        scale = (100.0 / int(pool.top_mask(self.protocol.top_frac).sum())
-                 if self.protocol.metric == "topcount" else 1.0)
-        curves = [scale * curve_from_trace(r["trace"], pool, self.protocol)
-                  for r in self.rows(arm, campaign)]
+        scale = (
+            100.0 / int(pool.top_mask(self.protocol.top_frac).sum())
+            if self.protocol.metric == "topcount"
+            else 1.0
+        )
+        curves = [
+            scale * curve_from_trace(r["trace"], pool, self.protocol)
+            for r in self.rows(arm, campaign)
+        ]
         width = min(len(c) for c in curves)
         return np.vstack([c[:width] for c in curves])

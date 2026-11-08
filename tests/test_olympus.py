@@ -39,9 +39,7 @@ def test_olympus_declares_hase_et_als_own_loop():
     assert bench.loop.n_seeds == 100
     assert bench.loop.metric == "best-value"
     assert bench.loop.exhaust is True
-    assert bench.checkpoints == OLYMPUS_CHECKPOINTS == (
-        1, 3, 10, 30, 100, 300, 1000, 3000, 10000
-    )
+    assert bench.checkpoints == OLYMPUS_CHECKPOINTS == (1, 3, 10, 30, 100, 300, 1000, 3000, 10000)
     assert len(set(bench.loop.active_seeds)) == 100
 
 
@@ -60,8 +58,7 @@ def test_best_value_curve_is_the_running_best_of_what_was_measured():
     from matbo.runner import run_campaign
 
     campaign = L.load("snar")
-    protocol = Protocol(n_initial=2, n_steps=5, scale_budget=False,
-                        metric="best-value")
+    protocol = Protocol(n_initial=2, n_steps=5, scale_budget=False, metric="best-value")
 
     # A deterministic arm: always take the first remaining candidate, so the
     # observed set is known and the curve can be checked against it exactly.
@@ -69,8 +66,7 @@ def test_best_value_curve_is_the_running_best_of_what_was_measured():
         def fit(self, req):
             return Posterior(mean=-np.arange(len(req.x_cand), dtype=float))
 
-    first = Method(name="first", surrogate=_InOrder(),
-                   acquisition=lambda post, req: post.mean)
+    first = Method(name="first", surrogate=_InOrder(), acquisition=lambda post, req: post.mean)
     curve = run_campaign(first, campaign, np.array([0, 1]), seed=0, protocol=protocol).curve
 
     observed = np.arange(protocol.n_initial + protocol.budget(campaign.n))
@@ -86,8 +82,8 @@ def test_checkpoints_are_read_as_total_experiments_not_acquisitions():
     from matbo.results import Curves
 
     cv = Curves(np.array([[10.0, 11.0, 12.0, 13.0]]), n_initial=2)
-    assert cv.at_experiments(1) == 10.0     # the first evaluation
-    assert cv.at_budget(1) == 12.0          # one acquisition past the design
+    assert cv.at_experiments(1) == 10.0  # the first evaluation
+    assert cv.at_budget(1) == 12.0  # one acquisition past the design
     with pytest.raises(IndexError):
         cv.at_experiments(5)
 

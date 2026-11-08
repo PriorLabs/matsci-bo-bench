@@ -34,8 +34,16 @@ from matbo.loaders.paths import olympus_dir
 from matbo.pool import build_pool, oriented
 
 OLYMPUS = [
-    "snar", "benzylation", "colors_n9", "alkox", "colors_bob",
-    "suzuki", "fullerenes", "photo_pce10", "photo_wf3", "hplc",
+    "snar",
+    "benzylation",
+    "colors_n9",
+    "alkox",
+    "colors_bob",
+    "suzuki",
+    "fullerenes",
+    "photo_pce10",
+    "photo_wf3",
+    "hplc",
 ]
 
 # Defects in the shipped metadata, appended to the constraint report so a
@@ -78,9 +86,7 @@ def _constraint_violations(x: np.ndarray, cfg: dict) -> list[str]:
         hi = np.array([b[1] for b in boxes])
         off = int((~((x >= lo - 1e-9) & (x <= hi + 1e-9)).all(axis=1)).sum())
         if off:
-            lines.append(
-                f"{off}/{len(x)} rows fall outside the declared parameter bounds"
-            )
+            lines.append(f"{off}/{len(x)} rows fall outside the declared parameter bounds")
     return lines
 
 
@@ -99,9 +105,7 @@ def load(stem: str) -> Campaign:
     features = [p["name"] for p in cfg["parameters"]]
     objectives = [m["name"] for m in cfg["measurements"]]
     if len(objectives) != 1:
-        raise ValueError(
-            f"{stem}: expected one measurement, config declares {objectives}"
-        )
+        raise ValueError(f"{stem}: expected one measurement, config declares {objectives}")
     # The csvs have no header row; the names come from the config.
     df = exact_csv.read_csv(root / "data.csv", header=None, names=features + objectives)
 

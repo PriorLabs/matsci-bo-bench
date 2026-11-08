@@ -31,8 +31,7 @@ from matbo.results import RunFile
 
 # The leading columns; the rest are s1..sN. A decoder must check
 # `pool_fingerprint` before reading the indices.
-TRACE_KEYS = ["run_tag", "benchmark", "campaign", "method", "seed", "pool",
-              "pool_fingerprint"]
+TRACE_KEYS = ["run_tag", "benchmark", "campaign", "method", "seed", "pool", "pool_fingerprint"]
 
 
 def _merged(path: Path, rows: list[dict], width: int) -> tuple[list[dict], int]:
@@ -47,8 +46,10 @@ def _merged(path: Path, rows: list[dict], width: int) -> tuple[list[dict], int]:
     replacing = {r["campaign"] for r in rows}
     kept = [r for r in existing if r["campaign"] not in replacing]
     for row in kept:
-        width = max(width, sum(1 for k, v in row.items()
-                               if k.startswith("s") and k[1:].isdigit() and v != ""))
+        width = max(
+            width,
+            sum(1 for k, v in row.items() if k.startswith("s") and k[1:].isdigit() and v != ""),
+        )
     return kept + rows, width
 
 
@@ -65,8 +66,10 @@ def _write_protocol(folder: Path, run: RunFile, tag: str) -> None:
                 f"REFUSED: {folder} was written under a different protocol "
                 f"({', '.join(differing)}); use a separate folder."
             )
-        payload = {"protocol": existing["protocol"],
-                   "run_tags": sorted(set(existing["run_tags"]) | {tag})}
+        payload = {
+            "protocol": existing["protocol"],
+            "run_tags": sorted(set(existing["run_tags"]) | {tag}),
+        }
     else:
         payload = {"protocol": json.loads(run.protocol.to_json()), "run_tags": [tag]}
     path.write_text(json.dumps(payload, indent=2) + "\n")
@@ -76,8 +79,10 @@ def main() -> int:
     tag = os.environ.get("TAG")
     benchmark = os.environ.get("BENCHMARK")
     if not tag or benchmark not in BENCHMARKS:
-        sys.exit("usage: BENCHMARK=<liang|olympus> TAG=<results subdirectory> "
-                 "python scripts/export_reference.py")
+        sys.exit(
+            "usage: BENCHMARK=<liang|olympus> TAG=<results subdirectory> "
+            "python scripts/export_reference.py"
+        )
     curves_path = RESULTS_DIR / tag / "curves.npz"
     if not curves_path.exists():
         sys.exit(f"no curves at {curves_path}")
@@ -99,8 +104,12 @@ def main() -> int:
         rows = []
         for seed, trace in zip(seeds, traces):
             row = {
-                "run_tag": tag, "benchmark": benchmark, "campaign": campaign,
-                "method": method, "seed": seed, "pool": run.n_pool[campaign],
+                "run_tag": tag,
+                "benchmark": benchmark,
+                "campaign": campaign,
+                "method": method,
+                "seed": seed,
+                "pool": run.n_pool[campaign],
                 "pool_fingerprint": run.fingerprint[campaign],
             }
             row |= {f"s{k + 1}": int(v) for k, v in enumerate(trace)}
@@ -109,7 +118,8 @@ def main() -> int:
         rows, width = _merged(path, rows, traces.shape[1])
         with path.open("w", newline="") as fh:
             writer = csv.DictWriter(
-                fh, fieldnames=TRACE_KEYS + [f"s{k + 1}" for k in range(width)],
+                fh,
+                fieldnames=TRACE_KEYS + [f"s{k + 1}" for k in range(width)],
                 restval="",
             )
             writer.writeheader()
