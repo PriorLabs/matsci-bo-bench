@@ -95,7 +95,9 @@ Set the partition, account and time limit with sbatch's own variables
 (`SBATCH_PARTITION`, `SBATCH_ACCOUNT`, `SBATCH_TIMELIMIT`) or `SBATCH_ARGS`.
 
 Run on CPU (`DEVICE=cpu`; the Slurm scripts set it). The recorded traces were
-computed on CPU. On a GPU, small floating-point differences change which
+computed on CPU, except on `hplc`, `photo_pce10` and `photo_wf3`: there, the
+five `TabICL` arms and `TabPFN-PI`, `TabPFN-UCB1` and `TabPFN-UCB2` ran on a GPU
+(run tags ending in `_rtx`). On a GPU, small floating-point differences change which
 candidate an arm picks, and the run follows a different path.
 
 A re-run picks the same candidates as the recorded trace when the numerics
