@@ -18,7 +18,7 @@ from matbo.analysis.field import (
 
 from . import style as S
 
-LABEL = {"topcount": "Top%", "best-value": "best value"}
+LABEL = {"topcount": "Top-5%", "best-value": "best value"}
 NI_LABEL = "normalized improvement\n(worst arm = 0, best arm = 1)"
 WIDTH = 7.08  # the paper includes these at \\linewidth from a 510 pt wide render
 

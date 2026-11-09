@@ -65,10 +65,10 @@ def liang():
                 ax.tick_params(labelbottom=False)
     for ax, title in zip(
         axes[0],
-        ("a  Top% against learning cycle", "b  enhancement factor", "c  acceleration factor"),
+        ("a  Top-5% against learning cycle", "b  enhancement factor", "c  acceleration factor"),
     ):
         ax.set_title(title, fontsize=7, loc="left")
-    for ax, label in zip(axes[-1], ("learning cycle $i$", "learning cycle $i$", "Top%")):
+    for ax, label in zip(axes[-1], ("learning cycle $i$", "learning cycle $i$", "Top-5%")):
         ax.set_xlabel(label, fontsize=7)
     band = _legend(fig, arms, "random (analytic)", (0, (4, 3)))
     fig.tight_layout(rect=(0, 0, 1, band), w_pad=0.5, h_pad=0.4)
