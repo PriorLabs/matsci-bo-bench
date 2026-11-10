@@ -1,6 +1,6 @@
 # Out-of-the-Box Tabular Foundation Models for Bayesian Optimization in Materials Discovery
 
-Code and results for the paper by Klemens Flöge, Simon Bing, Leo Grinsztajn,
+Code and results for the [paper](https://arxiv.org/abs/2611.12491) by Klemens Flöge, Simon Bing, Leo Grinsztajn,
 Eliott Kalfon, Lennart Purucker, Noah Hollmann and Frank Hutter (AI4Mat
 workshop, NeurIPS 2026).
 
