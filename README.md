@@ -129,3 +129,31 @@ the 56 arms.
 
 Apache 2.0 (see `LICENSE`). The datasets keep their own licenses
 (see [`data/README.md`](data/README.md)).
+
+## Citation
+
+If you use this code in a scientific publication, please cite our paper.
+
+**Out-of-the-Box Tabular Foundation Models for Bayesian Optimization in Materials Discovery**
+Klemens Flöge, Simon Bing, Leo Grinsztajn, Eliott Kalfon, Lennart Purucker, Noah Hollmann, Frank Hutter
+*AI4Mat Workshop, NeurIPS 2026*
+
+📄 [arXiv](https://arxiv.org/abs/2611.12491)
+
+<details>
+<summary><b>BibTeX</b></summary>
+
+```bibtex
+@misc{floege2026outofthebox,
+  title         = {Out-of-the-Box Tabular Foundation Models for Bayesian Optimization in Materials Discovery},
+  author        = {Fl{\"o}ge, Klemens and Bing, Simon and Grinsztajn, Leo and Kalfon, Eliott and Purucker, Lennart and Hollmann, Noah and Hutter, Frank},
+  year          = {2026},
+  eprint        = {2611.12491},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  note          = {AI4Mat Workshop at NeurIPS 2026},
+  url           = {https://arxiv.org/abs/2611.12491}
+}
+```
+
+</details>

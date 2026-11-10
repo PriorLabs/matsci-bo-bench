@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this code in a scientific publication, please cite our paper."
+title: "Out-of-the-Box Tabular Foundation Models for Bayesian Optimization in Materials Discovery"
+type: software
+repository-code: "https://github.com/PriorLabs/matsci-bo-bench"
+license: Apache-2.0
+authors: &authors
+  - given-names: Klemens
+    family-names: Flöge
+  - given-names: Simon
+    family-names: Bing
+  - given-names: Leo
+    family-names: Grinsztajn
+  - given-names: Eliott
+    family-names: Kalfon
+  - given-names: Lennart
+    family-names: Purucker
+  - given-names: Noah
+    family-names: Hollmann
+  - given-names: Frank
+    family-names: Hutter
+preferred-citation:
+  type: article
+  title: "Out-of-the-Box Tabular Foundation Models for Bayesian Optimization in Materials Discovery"
+  authors: *authors
+  journal: "arXiv preprint arXiv:2611.12491"
+  notes: "AI4Mat Workshop at NeurIPS 2026"
+  year: 2026
+  url: "https://arxiv.org/abs/2611.12491"
+  identifiers:
+    - type: other
+      value: "arXiv:2611.12491"
+      description: arXiv preprint
