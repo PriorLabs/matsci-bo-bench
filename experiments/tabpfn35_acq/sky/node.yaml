@@ -1,0 +1,25 @@
+# One L4 node with the benchmark's environment plus tabpfn 9.2.0 (TabPFN-3.5).
+# Work is sent with `sky exec <cluster> run.yaml --env JOBS=...`.
+resources:
+  accelerators: L4:1
+  cpus: 16+
+  disk_size: 100
+  use_spot: true
+
+workdir: .
+
+envs:
+  BUCKET: gs://p2or-sky-cache-eu-dev/klemens/matbo_tabpfn35_20261113
+  TABPFN_MODEL_CACHE_DIR: /home/gcpuser/tabpfn_cache
+
+setup: |
+  set -e
+  command -v uv || curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH=$HOME/.local/bin:$PATH
+  uv sync --locked
+  uv pip install olymp --no-deps
+  uv pip install tabpfn==9.2.0
+  mkdir -p $TABPFN_MODEL_CACHE_DIR
+  test -f $TABPFN_MODEL_CACHE_DIR/tabpfn-v3.5-20260909.safetensors || \
+    gcloud storage cp $BUCKET/weights/tabpfn-v3.5-20260909.safetensors $TABPFN_MODEL_CACHE_DIR/
+  .venv/bin/python -c "import tabpfn, torch; print(tabpfn.__version__, torch.__version__, torch.cuda.is_available())"

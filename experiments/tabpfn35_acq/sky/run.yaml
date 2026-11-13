@@ -1,0 +1,14 @@
+# JOBS: ';'-separated "BENCH CAMPAIGN RULES SEEDS" specs, run PAR at a time on the node.
+workdir: .
+
+envs:
+  BUCKET: gs://p2or-sky-cache-eu-dev/klemens/matbo_tabpfn35_20261113
+  TABPFN_MODEL_CACHE_DIR: /home/gcpuser/tabpfn_cache
+  RUN: step0
+  JOBS: ""
+  PAR: "3"
+  CHUNK: "32"
+
+run: |
+  export PATH=$HOME/.local/bin:$PATH
+  bash experiments/tabpfn35_acq/sky/run_jobs.sh
