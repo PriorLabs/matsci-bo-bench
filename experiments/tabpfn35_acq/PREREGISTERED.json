@@ -1,0 +1,13 @@
+{
+  "declared": "2026-11-14, before any TabPFN-3.5 trace was scored",
+  "primary_arm": "TabPFN35-MM",
+  "primary_definition": {
+    "liang": "TabPFN35-PTop: P(y >= plug-in top-5% cut of the pool), the expected one-step gain in Top-5% found",
+    "olympus": "TabPFN35-EI: expected improvement over the incumbent, the expected one-step gain in best value found"
+  },
+  "primary_claim": "NI-AUC (5-50% budgets, 56-arm field + this arm) above the best of the 56 existing arms on each benchmark",
+  "exploratory_rules": ["greedy", "EI", "PI", "UCB1", "UCB2", "TS", "PTop"],
+  "exploratory_selection": "pick the best exploratory rule on the first half of the protocol seeds, report it on the second half",
+  "tests": "paired per-seed AUC, Wilcoxon signed-rank per campaign; Wilcoxon over campaign NI-AUC differences",
+  "horizon": "traces stop at 50% of the pool; NI and seed AUCs read no later budget"
+}

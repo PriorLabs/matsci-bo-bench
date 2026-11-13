@@ -41,16 +41,27 @@ TRACE_KEYS = ["run_tag", "benchmark", "campaign", "method", "seed", "pool", "poo
 
 
 def _regressor(device: str, n_estimators: int):
+    """TabPFN-3.5 holding its loaded model, so a refit neither reloads nor re-places it.
+
+    ``predict_batched`` fits a clone per dataset, and a clone given a checkpoint
+    path reads the checkpoint and copies it to the device on every fit.
+    """
     from tabpfn import TabPFNRegressor
+    from tabpfn.base import ModelSpecs
     from tabpfn.constants import ModelVersion
 
-    return TabPFNRegressor.create_default_for_version(
-        ModelVersion.V3_5,
-        n_estimators=n_estimators,
-        device=device,
-        random_state=0,
-        categorical_features_indices=None,
+    kwargs = dict(n_estimators=n_estimators, device=device, random_state=0,
+                  categorical_features_indices=None)
+    base = TabPFNRegressor.create_default_for_version(ModelVersion.V3_5, **kwargs)
+    rng = np.random.default_rng(0)
+    base.fit(rng.random((8, 2)), rng.random(8))
+    spec = ModelSpecs(
+        model=base.models_[0],
+        architecture_config=base.configs_[0],
+        inference_config=base.inference_config_,
+        norm_criterion=base.znorm_space_bardist_,
     )
+    return TabPFNRegressor(model_path=spec, **kwargs)
 
 
 def stop_length(n: int, frac: float) -> int:
