@@ -25,6 +25,8 @@ class Round:
     n_pool: int
     top_frac: float
     rng: np.random.Generator
+    #: Picks made so far (initial design included) over the pool size.
+    budget_frac: float = 0.0
 
     @property
     def criterion(self):
@@ -55,8 +57,9 @@ def ei(r: Round) -> np.ndarray:
 
 def pi(r: Round) -> np.ndarray:
     c, logits = r.criterion, r.logits
-    best = torch.full(logits.shape[:-1], float(np.max(r.y_obs)), dtype=c.borders.dtype,
-                      device=logits.device)
+    best = torch.full(
+        logits.shape[:-1], float(np.max(r.y_obs)), dtype=c.borders.dtype, device=logits.device
+    )
     return _np(c.pi(logits, best, maximize=True))
 
 
@@ -118,6 +121,73 @@ def p_top(r: Round) -> np.ndarray:
     return 1.0 - _np(c.cdf(logits, ys))
 
 
+def features(r: Round) -> np.ndarray:
+    """[candidate, feature] summary of each candidate's predictive, free of the target's scale.
+
+    Values are standardized by the observed targets' spread and centred on the
+    plug-in top-5% cut, so a head trained on one pool family reads any pool.
+    """
+    c, logits = r.criterion, r.logits
+    y = np.asarray(r.y_obs, dtype=np.float64)
+    scale = float(np.std(y)) or 1.0
+    k = int(np.ceil(r.n_pool * r.top_frac))
+    tau = top_threshold(r, k)
+    inc = float(y.max())
+    n_cand = logits.shape[0]
+
+    def surv(t: float) -> np.ndarray:
+        ys = torch.full((n_cand, 1), t, dtype=c.borders.dtype, device=logits.device)
+        return 1.0 - _np(c.cdf(logits, ys))
+
+    mean = greedy(r)
+    q = np.stack([_np(c.icdf(logits, p)) for p in (0.1, 0.5, 0.9)], axis=1)
+    p_top = surv(tau)
+    ei_tau = _np(c.ei(logits, tau, maximize=True)) / scale
+    rank = np.argsort(np.argsort(-p_top)) / max(n_cand - 1, 1)
+    found = float(np.sum(y >= tau)) / k
+    cols = [
+        p_top,
+        surv(inc),
+        np.log(p_top + 1e-6),
+        ei_tau,
+        _np(c.ei(logits, inc, maximize=True)) / scale,
+        (mean - tau) / scale,
+        (q[:, 2] - q[:, 0]) / scale,
+        (q - tau) / scale,
+        rank,
+        np.full(n_cand, r.budget_frac),
+        np.full(n_cand, found),
+        np.full(n_cand, (inc - tau) / scale),
+        np.full(n_cand, float(np.sum(p_top))),
+    ]
+    return np.column_stack([np.asarray(v, dtype=np.float64).reshape(n_cand, -1) for v in cols])
+
+
+_HEAD = None
+
+
+def head(r: Round) -> np.ndarray:
+    """A small MLP over :func:`features`, trained on synthetic pools (``HEAD_PATH``)."""
+    global _HEAD
+    if _HEAD is None:
+        import os
+
+        blob = torch.load(os.environ["HEAD_PATH"], map_location="cpu", weights_only=True)
+        net = torch.nn.Sequential(
+            torch.nn.Linear(blob["n_in"], blob["width"]),
+            torch.nn.GELU(),
+            torch.nn.Linear(blob["width"], blob["width"]),
+            torch.nn.GELU(),
+            torch.nn.Linear(blob["width"], 1),
+        )
+        net.load_state_dict(blob["state"])
+        _HEAD = (net.double().eval(), blob["mu"].double(), blob["sd"].double())
+    net, mu, sd = _HEAD
+    f = torch.as_tensor(np.nan_to_num(features(r), posinf=1e6, neginf=-1e6))
+    with torch.no_grad():
+        return net((f - mu) / sd).squeeze(-1).numpy()
+
+
 RULES = {
     "greedy": greedy,
     "EI": ei,
@@ -126,4 +196,5 @@ RULES = {
     "UCB2": ucb(2.0),
     "TS": thompson,
     "PTop": p_top,
+    "Head": head,
 }

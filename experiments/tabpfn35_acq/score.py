@@ -43,7 +43,9 @@ def new_arm_blocks(record: Record, folder: Path) -> dict[str, dict[str, np.ndarr
             pool = record.campaign(campaign)
             if row["pool_fingerprint"] != pool.fingerprint():
                 raise ValueError(f"{path}: pool moved")
-            keys = sorted((k for k in row if k[:1] == "s" and k[1:].isdigit()), key=lambda k: int(k[1:]))
+            keys = sorted(
+                (k for k in row if k[:1] == "s" and k[1:].isdigit()), key=lambda k: int(k[1:])
+            )
             trace = np.array([int(row[k]) for k in keys])
             curve = _scale(record, pool) * curve_from_trace(trace, pool, record.protocol)
             out.setdefault(row["method"], {}).setdefault(campaign, {})[int(row["seed"])] = curve
@@ -137,13 +139,26 @@ def main() -> int:
                     p = stats.wilcoxon(a, b).pvalue if np.any(d != 0) else 1.0
                     wins += int(d.mean() > 0 and p < 0.05) - int(d.mean() < 0 and p < 0.05)
                     tests.append(
-                        {"arm": arm, "vs": ref, "campaign": campaign, "mean_diff": d.mean(),
-                         "wilcoxon_p": p, "dNI": d_ni[c]}
+                        {
+                            "arm": arm,
+                            "vs": ref,
+                            "campaign": campaign,
+                            "mean_diff": d.mean(),
+                            "wilcoxon_p": p,
+                            "dNI": d_ni[c],
+                        }
                     )
                 p_c = stats.wilcoxon(d_ni).pvalue if np.any(d_ni != 0) else 1.0
                 tests.append(
-                    {"arm": arm, "vs": ref, "campaign": "ALL (campaign NI)", "mean_diff": d_ni.mean(),
-                     "wilcoxon_p": p_c, "dNI": d_ni.mean(), "sig_wins_minus_losses": wins}
+                    {
+                        "arm": arm,
+                        "vs": ref,
+                        "campaign": "ALL (campaign NI)",
+                        "mean_diff": d_ni.mean(),
+                        "wilcoxon_p": p_c,
+                        "dNI": d_ni.mean(),
+                        "sig_wins_minus_losses": wins,
+                    }
                 )
     pd.set_option("display.width", 250)
     print(f"{args.benchmark}, seeds={args.seeds} ({len(keep)})")
