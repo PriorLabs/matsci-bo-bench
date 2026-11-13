@@ -7,7 +7,7 @@ Each new arm joins the field on its own (56 + 1 arms), so new arms never move
 each other's NI. NI and seed AUCs read budgets 5-50% only, so traces cut at
 half the pool score exactly as full ones do.
 
-    python experiments/tabpfn35_acq/score.py liang results/step0 [--seeds first|second|all]
+    python experiments/tabpfn35_acq/score.py liang results/step0 [--seeds first|second|all|N]
 """
 
 from __future__ import annotations
@@ -58,10 +58,10 @@ def new_arm_blocks(record: Record, folder: Path) -> dict[str, dict[str, np.ndarr
     return blocks
 
 
-def field_blocks(record: Record) -> dict[str, np.ndarray]:
+def field_blocks(record: Record, campaigns: list[str]) -> dict[str, np.ndarray]:
     """campaign -> [FIELD arm, seed, evaluation], cut at 50% of the pool (+1)."""
     out = {}
-    for campaign in record.campaigns:
+    for campaign in campaigns:
         n = record.campaign(campaign).n
         width = int(np.rint(0.5 * n)) + 1
         out[campaign] = np.stack([record.block(a, campaign)[:, :width] for a in FIELD])
@@ -83,24 +83,29 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("benchmark")
     ap.add_argument("folder", type=Path)
-    ap.add_argument("--seeds", default="all", choices=["all", "first", "second"])
+    ap.add_argument(
+        "--seeds", default="all", help="all, first, second (halves), or N for the first N"
+    )
+    ap.add_argument("--campaigns", default="", help="comma-separated subset of campaigns")
     ap.add_argument("--vs", default="", help="comma-separated arms to test against (default: best)")
     args = ap.parse_args()
 
     record = Record.load(args.benchmark)
+    campaigns = args.campaigns.split(",") if args.campaigns else record.campaigns
     seeds = list(record.protocol.seeds)
     half = len(seeds) // 2
-    keep = {"all": seeds, "first": seeds[:half], "second": seeds[half:]}[args.seeds]
-    fb = field_blocks(record)
+    halves = {"all": seeds, "first": seeds[:half], "second": seeds[half:]}
+    keep = halves[args.seeds] if args.seeds in halves else seeds[: int(args.seeds)]
+    fb = field_blocks(record, campaigns)
     new = new_arm_blocks(record, args.folder)
 
     rows, tests = [], []
     for arm, by_c in sorted(new.items()):
-        if set(by_c) != set(record.campaigns):
+        if not set(campaigns) <= set(by_c):
             print(f"skip {arm}: has {sorted(by_c)}")
             continue
         blocks = {}
-        for campaign in record.campaigns:
+        for campaign in campaigns:
             have, curves = by_c[campaign]
             sel = [i for i, s in enumerate(seeds) if s in keep and s in have]
             mine = [have.index(seeds[i]) for i in sel]
@@ -124,14 +129,14 @@ def main() -> int:
                 "best_existing": best_old,
                 "best_existing_NI": overall[best_old],
             }
-            for c, campaign in enumerate(record.campaigns):
+            for c, campaign in enumerate(campaigns):
                 row[campaign] = per[c, names.index(arm)]
             rows.append(row)
             for ref in vs:
                 j = names.index(ref)
                 d_ni = per[:, names.index(arm)] - per[:, j]
                 wins = 0
-                for c, campaign in enumerate(record.campaigns):
+                for c, campaign in enumerate(campaigns):
                     n = record.campaign(campaign).n
                     a = seed_auc(_pad(blocks[campaign][-1], n), n)
                     b = seed_auc(_pad(blocks[campaign][j], n), n)
