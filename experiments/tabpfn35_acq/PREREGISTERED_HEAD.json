@@ -1,0 +1,8 @@
+{
+  "declared": "2026-11-14, before the head was run on any benchmark campaign",
+  "arm": "TabPFN35-Head (head_v1: MLP over bar-distribution features, trained only on synthetic GP pools to predict the realized 2-step Top-5% gain of 'pick c, then one PTop pick')",
+  "first_campaign": "liang/AutoAM (n=100, 50 seeds): the cheapest pool where TabPFN is not the best family (best TabPFN-3 arm ranks 25th; best arm GP-ARD-greedy)",
+  "comparisons": ["GP-ARD-greedy (best existing arm on AutoAM)", "TabPFN35-PTop (preregistered step-0 primary)", "best TabPFN35 step-0 rule on AutoAM (TabPFN35-PI)"],
+  "tests": "paired per-seed AUC over 5-50% budgets, Wilcoxon signed-rank over the 50 seeds; NI-AUC on AutoAM in the 56-arm field + this arm",
+  "no_tuning": "no head hyperparameter is changed after seeing AutoAM"
+}
