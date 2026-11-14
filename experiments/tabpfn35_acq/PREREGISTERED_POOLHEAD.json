@@ -1,0 +1,16 @@
+{
+  "declared": "2026-11-14 13:35 UTC, before any pool-head trace on a benchmark campaign or the synthetic gate",
+  "arms": {
+    "TabPFN35-PoolHead": "pool head (pool_head.py, rl.py checkpoint at iteration 100) on TabPFN-3.5",
+    "TabPFN3x-PoolHead": "the same head trained on TabPFN-3 (v3_default via tabpfn 9.2.0)"
+  },
+  "primary_selection": "the primary is the backbone whose head gains more over its own base rule on the held-out synthetic gate (20 mixed-prior pools x 4 seeds, mean of the Top-5% and best-value gains), fixed before any campaign is run",
+  "campaigns": {
+    "liang": ["AutoAM"],
+    "olympus": ["benzylation", "colors_bob", "fullerenes"],
+    "why": "small pools where a non-TabPFN arm is the best of the 56 (AutoAM: GP-ARD-greedy; benzylation: GP-MLP-UCB2; colors_bob: GP-MLP-UCB1; fullerenes: GP-iso-UCB2)"
+  },
+  "comparisons": ["best existing arm per campaign", "the head's own base rule on the same backbone (PTop on liang, EI on olympus)", "TabPFN-EI / TabPFN-UCB1 (paper TabPFN-3 arms)"],
+  "tests": "all protocol seeds (50 liang, 100 olympus), paired; Wilcoxon over seeds per campaign; NI-AUC in the 56-arm field + one arm",
+  "no_tuning": "no head or training change after any campaign result"
+}
