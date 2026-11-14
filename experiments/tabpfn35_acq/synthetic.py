@@ -107,7 +107,8 @@ def sample_state(y: np.ndarray, rng: np.random.Generator, max_obs: int) -> np.nd
 
 def pool_mixed(rng: np.random.Generator, lo: int, hi: int) -> tuple[np.ndarray, np.ndarray]:
     """A pool of ``lo``-``hi`` rows from a GP draw or a random tanh MLP, warped and noised."""
-    n = int(np.exp(rng.uniform(np.log(lo), np.log(hi))))
+    # design_gp redraws until it has MIN_N rows, so a smaller n would never return.
+    n = max(MIN_N, int(np.exp(rng.uniform(np.log(lo), np.log(hi)))))
     if rng.random() < 0.5:
         x, y = design_gp(n, rng)
         return x.astype(np.float64), (-y if rng.random() < 0.5 else y).astype(np.float64)
