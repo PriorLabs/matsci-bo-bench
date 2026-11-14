@@ -1,0 +1,16 @@
+# Pool-head gate and campaigns (eval.sh) on a node launched from node.yaml.
+workdir: .
+
+envs:
+  BUCKET: gs://p2or-sky-cache-eu-dev/klemens/matbo_tabpfn35_20261113
+  TABPFN_MODEL_CACHE_DIR: /home/gcpuser/tabpfn_cache
+  RUN: eval_v35
+  HEAD_RUN: rl_v35
+  TABPFN_VERSION: v3.5
+  PREFIX: TabPFN35
+  BASE_TOP: ""
+  BASE_BEST: ""
+
+run: |
+  export PATH=$HOME/.local/bin:$PATH
+  bash experiments/tabpfn35_acq/sky/eval.sh
