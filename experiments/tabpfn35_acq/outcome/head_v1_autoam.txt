@@ -1,0 +1,28 @@
+liang, seeds=all (50)
+            arm    NI  rank best_existing  best_existing_NI  AutoAM
+    TabPFN35-PI 0.831    11 GP-ARD-greedy             0.915   0.831
+  TabPFN35-UCB1 0.814    13 GP-ARD-greedy             0.915   0.814
+TabPFN35-greedy 0.811    13 GP-ARD-greedy             0.915   0.811
+  TabPFN35-PTop 0.801    16 GP-ARD-greedy             0.915   0.801
+  TabPFN35-UCB2 0.606    42 GP-ARD-greedy             0.915   0.606
+    TabPFN35-EI 0.551    45 GP-ARD-greedy             0.915   0.551
+  TabPFN35-Head 0.537    45 GP-ARD-greedy             0.915   0.537
+    TabPFN35-TS 0.516    47 GP-ARD-greedy             0.914   0.516
+
+            arm            vs          campaign  mean_diff  wilcoxon_p     dNI  sig_wins_minus_losses
+    TabPFN35-EI GP-ARD-greedy            AutoAM   -15.6267      0.0003 -0.3638                    NaN
+    TabPFN35-EI GP-ARD-greedy ALL (campaign NI)    -0.3638      1.0000 -0.3638                   -1.0
+  TabPFN35-Head GP-ARD-greedy            AutoAM   -17.6622      0.0001 -0.3779                    NaN
+  TabPFN35-Head GP-ARD-greedy ALL (campaign NI)    -0.3779      1.0000 -0.3779                   -1.0
+    TabPFN35-PI GP-ARD-greedy            AutoAM    -2.4622      0.2823 -0.0830                    NaN
+    TabPFN35-PI GP-ARD-greedy ALL (campaign NI)    -0.0830      1.0000 -0.0830                    0.0
+  TabPFN35-PTop GP-ARD-greedy            AutoAM    -3.0622      0.1272 -0.1136                    NaN
+  TabPFN35-PTop GP-ARD-greedy ALL (campaign NI)    -0.1136      1.0000 -0.1136                    0.0
+    TabPFN35-TS GP-ARD-greedy            AutoAM   -17.8356      0.0001 -0.3982                    NaN
+    TabPFN35-TS GP-ARD-greedy ALL (campaign NI)    -0.3982      1.0000 -0.3982                   -1.0
+  TabPFN35-UCB1 GP-ARD-greedy            AutoAM    -3.0800      0.1123 -0.1008                    NaN
+  TabPFN35-UCB1 GP-ARD-greedy ALL (campaign NI)    -0.1008      1.0000 -0.1008                    0.0
+  TabPFN35-UCB2 GP-ARD-greedy            AutoAM   -12.6844      0.0038 -0.3090                    NaN
+  TabPFN35-UCB2 GP-ARD-greedy ALL (campaign NI)    -0.3090      1.0000 -0.3090                   -1.0
+TabPFN35-greedy GP-ARD-greedy            AutoAM    -4.4000      0.0718 -0.1037                    NaN
+TabPFN35-greedy GP-ARD-greedy ALL (campaign NI)    -0.1037      1.0000 -0.1037                    0.0

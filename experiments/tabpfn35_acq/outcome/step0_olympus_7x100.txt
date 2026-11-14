@@ -1,0 +1,31 @@
+olympus, seeds=all (100)
+          arm    NI  rank best_existing  best_existing_NI  snar  benzylation  colors_n9  alkox  colors_bob  suzuki  fullerenes
+  TabPFN35-EI 0.951     2     TabPFN-EI             0.975 0.869        0.971      0.987  0.949       0.990   0.996       0.899
+TabPFN35-UCB2 0.944     2     TabPFN-EI             0.977 0.926        0.973      0.986  0.853       0.995   0.994       0.882
+TabPFN35-PTop 0.920    11     TabPFN-EI             0.978 0.979        0.979      0.982  0.708       0.996   0.998       0.796
+
+          arm        vs          campaign  mean_diff  wilcoxon_p     dNI  sig_wins_minus_losses
+  TabPFN35-EI TabPFN-EI              snar    -0.0021      0.0000 -0.0846                    NaN
+  TabPFN35-EI TabPFN-EI       benzylation    -0.0025      0.3978 -0.0061                    NaN
+  TabPFN35-EI TabPFN-EI         colors_n9    -0.0006      0.2667 -0.0065                    NaN
+  TabPFN35-EI TabPFN-EI             alkox    -0.3521      0.7533 -0.0058                    NaN
+  TabPFN35-EI TabPFN-EI        colors_bob    -0.0001      0.0002 -0.0058                    NaN
+  TabPFN35-EI TabPFN-EI            suzuki    -0.0758      0.0025 -0.0040                    NaN
+  TabPFN35-EI TabPFN-EI        fullerenes    -0.0006      0.0000 -0.0535                    NaN
+  TabPFN35-EI TabPFN-EI ALL (campaign NI)    -0.0238      0.0156 -0.0238                   -4.0
+TabPFN35-PTop TabPFN-EI              snar     0.0008      0.0001  0.0247                    NaN
+TabPFN35-PTop TabPFN-EI       benzylation     0.0001      0.5453  0.0019                    NaN
+TabPFN35-PTop TabPFN-EI         colors_n9    -0.0010      0.4703 -0.0109                    NaN
+TabPFN35-PTop TabPFN-EI             alkox   -10.2116      0.0006 -0.2638                    NaN
+TabPFN35-PTop TabPFN-EI        colors_bob    -0.0000      0.5661  0.0001                    NaN
+TabPFN35-PTop TabPFN-EI            suzuki    -0.0356      0.0225 -0.0019                    NaN
+TabPFN35-PTop TabPFN-EI        fullerenes    -0.0015      0.0000 -0.1566                    NaN
+TabPFN35-PTop TabPFN-EI ALL (campaign NI)    -0.0580      0.4688 -0.0580                   -2.0
+TabPFN35-UCB2 TabPFN-EI              snar    -0.0010      0.0113 -0.0277                    NaN
+TabPFN35-UCB2 TabPFN-EI       benzylation    -0.0023      0.6616 -0.0046                    NaN
+TabPFN35-UCB2 TabPFN-EI         colors_n9    -0.0007      0.1563 -0.0068                    NaN
+TabPFN35-UCB2 TabPFN-EI             alkox    -4.5927      0.1903 -0.1167                    NaN
+TabPFN35-UCB2 TabPFN-EI        colors_bob    -0.0000      0.5197 -0.0005                    NaN
+TabPFN35-UCB2 TabPFN-EI            suzuki    -0.1042      0.0001 -0.0056                    NaN
+TabPFN35-UCB2 TabPFN-EI        fullerenes    -0.0007      0.0008 -0.0704                    NaN
+TabPFN35-UCB2 TabPFN-EI ALL (campaign NI)    -0.0332      0.0156 -0.0332                   -3.0

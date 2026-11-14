@@ -1,0 +1,5 @@
+Pool head (iteration 100) vs its base rule on held-out mixed-prior synthetic pools; 5-50% AUC; paired Wilcoxon over pool x seed
+eval_v35 gate_top runs 80 PoolHead 62.27 PTop 63.44 diff -1.18 p=0.177
+eval_v35 gate_best runs 80 PoolHead 92.57 EI 92.94 diff -0.37 p=0.898
+eval_v3 gate_top runs 72 PoolHead 65.46 PTop 65.22 diff +0.24 p=0.645
+eval_v3 gate_best runs 72 PoolHead 93.68 EI 93.70 diff -0.02 p=0.867

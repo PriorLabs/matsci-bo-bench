@@ -1,0 +1,53 @@
+liang, seeds=all (50)
+            arm    NI  rank best_existing  best_existing_NI  Crossed barrel  P3HT  AgNP  Perovskite  AutoAM
+  TabPFN35-UCB1 0.884     1   TabPFN-UCB1             0.875           0.914 0.929 0.939       0.823   0.814
+  TabPFN35-PTop 0.881     1   TabPFN-UCB1             0.875           0.961 0.950 0.946       0.747   0.801
+    TabPFN35-PI 0.846     3   TabPFN-UCB1             0.875           0.942 0.878 0.918       0.660   0.831
+TabPFN35-greedy 0.845     3   TabPFN-UCB1             0.870           0.779 0.888 0.763       0.985   0.811
+  TabPFN35-UCB2 0.739    23   TabPFN-UCB1             0.876           0.934 0.903 0.822       0.431   0.606
+    TabPFN35-EI 0.692    37   TabPFN-UCB1             0.876           0.889 0.823 0.826       0.371   0.551
+    TabPFN35-TS 0.543    55   TabPFN-UCB1             0.875           0.638 0.595 0.654       0.311   0.516
+
+            arm          vs          campaign  mean_diff  wilcoxon_p     dNI  sig_wins_minus_losses
+    TabPFN35-EI TabPFN-UCB1    Crossed barrel     0.4200      0.9924 -0.0173                    NaN
+    TabPFN35-EI TabPFN-UCB1              P3HT    -7.0247      0.0000 -0.1276                    NaN
+    TabPFN35-EI TabPFN-UCB1              AgNP    -6.2321      0.0000 -0.1443                    NaN
+    TabPFN35-EI TabPFN-UCB1        Perovskite   -15.1111      0.0000 -0.4383                    NaN
+    TabPFN35-EI TabPFN-UCB1            AutoAM    -9.2000      0.0078 -0.1931                    NaN
+    TabPFN35-EI TabPFN-UCB1 ALL (campaign NI)    -0.1841      0.0625 -0.1841                   -4.0
+    TabPFN35-PI TabPFN-UCB1    Crossed barrel     2.3333      0.0078  0.0349                    NaN
+    TabPFN35-PI TabPFN-UCB1              P3HT    -3.7827      0.0000 -0.0730                    NaN
+    TabPFN35-PI TabPFN-UCB1              AgNP    -2.2494      0.0035 -0.0526                    NaN
+    TabPFN35-PI TabPFN-UCB1        Perovskite    -7.4711      0.0050 -0.1442                    NaN
+    TabPFN35-PI TabPFN-UCB1            AutoAM     3.9644      0.0853  0.0893                    NaN
+    TabPFN35-PI TabPFN-UCB1 ALL (campaign NI)    -0.0291      0.6250 -0.0291                   -2.0
+  TabPFN35-PTop TabPFN-UCB1    Crossed barrel     3.1185      0.0000  0.0546                    NaN
+  TabPFN35-PTop TabPFN-UCB1              P3HT     0.0741      0.9116 -0.0000                    NaN
+  TabPFN35-PTop TabPFN-UCB1              AgNP    -1.0667      0.3895 -0.0248                    NaN
+  TabPFN35-PTop TabPFN-UCB1        Perovskite    -2.7289      0.1190 -0.0590                    NaN
+  TabPFN35-PTop TabPFN-UCB1            AutoAM     3.3644      0.5178  0.0587                    NaN
+  TabPFN35-PTop TabPFN-UCB1 ALL (campaign NI)     0.0059      1.0000  0.0059                    1.0
+    TabPFN35-TS TabPFN-UCB1    Crossed barrel   -12.8689      0.0000 -0.2690                    NaN
+    TabPFN35-TS TabPFN-UCB1              P3HT   -18.9481      0.0000 -0.3557                    NaN
+    TabPFN35-TS TabPFN-UCB1              AgNP   -16.3185      0.0000 -0.3167                    NaN
+    TabPFN35-TS TabPFN-UCB1        Perovskite   -21.4356      0.0000 -0.4965                    NaN
+    TabPFN35-TS TabPFN-UCB1            AutoAM   -11.4089      0.0012 -0.2258                    NaN
+    TabPFN35-TS TabPFN-UCB1 ALL (campaign NI)    -0.3327      0.0625 -0.3327                   -5.0
+  TabPFN35-UCB1 TabPFN-UCB1    Crossed barrel     0.1763      0.7721  0.0070                    NaN
+  TabPFN35-UCB1 TabPFN-UCB1              P3HT    -0.7580      0.1410 -0.0198                    NaN
+  TabPFN35-UCB1 TabPFN-UCB1              AgNP    -1.3185      0.2425 -0.0310                    NaN
+  TabPFN35-UCB1 TabPFN-UCB1        Perovskite    -0.8000      0.8205  0.0159                    NaN
+  TabPFN35-UCB1 TabPFN-UCB1            AutoAM     3.3467      0.1272  0.0715                    NaN
+  TabPFN35-UCB1 TabPFN-UCB1 ALL (campaign NI)     0.0087      1.0000  0.0087                    0.0
+  TabPFN35-UCB2 TabPFN-UCB1    Crossed barrel     2.1578      0.0016  0.0273                    NaN
+  TabPFN35-UCB2 TabPFN-UCB1              P3HT    -2.6222      0.0001 -0.0476                    NaN
+  TabPFN35-UCB2 TabPFN-UCB1              AgNP    -6.0765      0.0000 -0.1486                    NaN
+  TabPFN35-UCB2 TabPFN-UCB1        Perovskite   -12.5244      0.0000 -0.3806                    NaN
+  TabPFN35-UCB2 TabPFN-UCB1            AutoAM    -6.2578      0.0321 -0.1367                    NaN
+  TabPFN35-UCB2 TabPFN-UCB1 ALL (campaign NI)    -0.1372      0.1250 -0.1372                   -3.0
+TabPFN35-greedy TabPFN-UCB1    Crossed barrel    -7.0267      0.0000 -0.1272                    NaN
+TabPFN35-greedy TabPFN-UCB1              P3HT    -3.1407      0.0004 -0.0628                    NaN
+TabPFN35-greedy TabPFN-UCB1              AgNP   -10.8247      0.0001 -0.2073                    NaN
+TabPFN35-greedy TabPFN-UCB1        Perovskite     4.8533      0.0035  0.2057                    NaN
+TabPFN35-greedy TabPFN-UCB1            AutoAM     2.0267      0.1942  0.0686                    NaN
+TabPFN35-greedy TabPFN-UCB1 ALL (campaign NI)    -0.0246      0.8125 -0.0246                   -2.0

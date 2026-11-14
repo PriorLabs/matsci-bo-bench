@@ -1,0 +1,18 @@
+skip TabPFN35-PTop: has ['alkox', 'benzylation', 'colors_bob', 'colors_n9', 'fullerenes', 'snar', 'suzuki']
+skip TabPFN35-UCB2: has ['alkox', 'benzylation', 'colors_bob', 'colors_n9', 'fullerenes', 'snar', 'suzuki']
+olympus, seeds=20 (20)
+        arm    NI  rank best_existing  best_existing_NI  snar  benzylation  colors_n9  alkox  colors_bob  suzuki  fullerenes  photo_pce10  photo_wf3  hplc
+TabPFN35-EI 0.949     5     TabPFN-EI              0.97   0.8        0.975      0.981  0.887       0.982   0.994       0.885          1.0        1.0 0.983
+
+        arm        vs          campaign  mean_diff  wilcoxon_p     dNI  sig_wins_minus_losses
+TabPFN35-EI TabPFN-EI              snar    -0.0048      0.0020 -0.1385                    NaN
+TabPFN35-EI TabPFN-EI       benzylation     0.0046      0.5595  0.0014                    NaN
+TabPFN35-EI TabPFN-EI         colors_n9    -0.0012      0.2120 -0.0109                    NaN
+TabPFN35-EI TabPFN-EI             alkox     0.3036      0.8721  0.0166                    NaN
+TabPFN35-EI TabPFN-EI        colors_bob    -0.0001      0.0786 -0.0096                    NaN
+TabPFN35-EI TabPFN-EI            suzuki    -0.1134      0.0904 -0.0056                    NaN
+TabPFN35-EI TabPFN-EI        fullerenes    -0.0006      0.1327 -0.0571                    NaN
+TabPFN35-EI TabPFN-EI       photo_pce10     0.0000      1.0000  0.0000                    NaN
+TabPFN35-EI TabPFN-EI         photo_wf3     0.0000      1.0000  0.0000                    NaN
+TabPFN35-EI TabPFN-EI              hplc    -3.2197      0.5692 -0.0089                    NaN
+TabPFN35-EI TabPFN-EI ALL (campaign NI)    -0.0213      0.1484 -0.0213                   -1.0
