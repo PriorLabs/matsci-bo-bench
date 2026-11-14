@@ -40,8 +40,8 @@ from matbo.runner import choose_init  # noqa: E402
 TRACE_KEYS = ["run_tag", "benchmark", "campaign", "method", "seed", "pool", "pool_fingerprint"]
 
 
-def _regressor(device: str, n_estimators: int):
-    """TabPFN-3.5 holding its loaded model, so a refit neither reloads nor re-places it.
+def _regressor(device: str, n_estimators: int, version: str | None = None):
+    """TabPFN (``TABPFN_VERSION``, default v3.5) holding its loaded model, so a refit neither reloads nor re-places it.
 
     ``predict_batched`` fits a clone per dataset, and a clone given a checkpoint
     path reads the checkpoint and copies it to the device on every fit.
@@ -53,7 +53,8 @@ def _regressor(device: str, n_estimators: int):
     kwargs = dict(
         n_estimators=n_estimators, device=device, random_state=0, categorical_features_indices=None
     )
-    base = TabPFNRegressor.create_default_for_version(ModelVersion.V3_5, **kwargs)
+    version = version or os.environ.get("TABPFN_VERSION", "v3.5")
+    base = TabPFNRegressor.create_default_for_version(ModelVersion(version), **kwargs)
     rng = np.random.default_rng(0)
     base.fit(rng.random((8, 2)), rng.random(8))
     spec = ModelSpecs(
@@ -81,6 +82,7 @@ def run_lockstep(
     chunk: int,
     state_path: Path | None = None,
     log=print,
+    metric: str = "topcount",
 ) -> list[list[int]]:
     """Extend every (rule, seed) trace to ``length`` picks; ``traces`` start as initial designs."""
     n = len(y)
@@ -110,6 +112,7 @@ def run_lockstep(
                 top_frac=top_frac,
                 rng=np.random.default_rng([seed, step, 1]),
                 budget_frac=step / n,
+                metric=metric,
             )
             remaining = np.flatnonzero(masks[j])
             if out["logits"].shape[-1] == 1:
@@ -187,6 +190,7 @@ def main() -> int:
         chunk,
         state_path,
         log=lambda m: print(m, flush=True),
+        metric=protocol.metric,
     )
 
     fp = campaign.fingerprint()

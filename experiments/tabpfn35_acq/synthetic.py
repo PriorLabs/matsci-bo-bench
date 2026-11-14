@@ -103,3 +103,25 @@ def sample_state(y: np.ndarray, rng: np.random.Generator, max_obs: int) -> np.nd
     w[init] = 0
     picks = rng.choice(n, n_obs - 2, replace=False, p=w / w.sum())
     return np.concatenate([init, picks])
+
+
+def pool_mixed(rng: np.random.Generator, lo: int, hi: int) -> tuple[np.ndarray, np.ndarray]:
+    """A pool of ``lo``-``hi`` rows from a GP draw or a random tanh MLP, warped and noised."""
+    n = int(np.exp(rng.uniform(np.log(lo), np.log(hi))))
+    if rng.random() < 0.5:
+        x, y = design_gp(n, rng)
+        return x.astype(np.float64), (-y if rng.random() < 0.5 else y).astype(np.float64)
+    x, z = _design(n, rng)
+    while x.shape[1] > MAX_DIM or len(x) < min(lo, MIN_N):
+        x, z = _design(n, rng)
+    h = z
+    for width in (int(rng.integers(8, 33)), int(rng.integers(8, 33))):
+        w = rng.normal(size=(h.shape[1], width)) * rng.uniform(0.5, 3.0) / np.sqrt(h.shape[1])
+        h = np.tanh(h @ w + rng.normal(size=width))
+    f = h @ rng.normal(size=h.shape[1])
+    f = (f - f.mean()) / (f.std() + 1e-9)
+    if rng.random() < 0.3:
+        f = np.exp(rng.uniform(0.5, 2.0) * f)
+    noise = np.exp(rng.uniform(np.log(1e-3), np.log(0.3))) * (f.std() + 1e-9)
+    y = f + rng.normal(size=len(f)) * noise
+    return x.astype(np.float64), (-y if rng.random() < 0.5 else y).astype(np.float64)

@@ -1,0 +1,21 @@
+# Train the pool head (rl.py) on a node launched from node.yaml; mirrors to $BUCKET/$RUN.
+workdir: .
+
+envs:
+  BUCKET: gs://p2or-sky-cache-eu-dev/klemens/matbo_tabpfn35_20261113
+  TABPFN_MODEL_CACHE_DIR: /home/gcpuser/tabpfn_cache
+  RUN: rl_v35
+  BACKBONE: v3.5
+  ITERS: "200"
+  MIN_N: "50"
+  MAX_N: "150"
+
+run: |
+  export PATH=$HOME/.local/bin:$PATH OMP_NUM_THREADS=8
+  OUT=$HOME/results/$RUN
+  mkdir -p $OUT
+  gcloud storage rsync -r $BUCKET/$RUN $OUT >/dev/null 2>&1
+  ( while true; do sleep 300; gcloud storage rsync -r $OUT $BUCKET/$RUN >/dev/null 2>&1; done ) &
+  OUT=$OUT .venv/bin/python experiments/tabpfn35_acq/rl.py > $OUT/train.log 2>&1
+  gcloud storage rsync -r $OUT $BUCKET/$RUN >/dev/null 2>&1
+  tail -2 $OUT/train.log

@@ -27,6 +27,8 @@ class Round:
     rng: np.random.Generator
     #: Picks made so far (initial design included) over the pool size.
     budget_frac: float = 0.0
+    #: The benchmark's metric: "topcount" (Top-5% found) or "best-value".
+    metric: str = "topcount"
 
     @property
     def criterion(self):
@@ -188,6 +190,13 @@ def head(r: Round) -> np.ndarray:
         return net((f - mu) / sd).squeeze(-1).numpy()
 
 
+def pool_head(r: Round) -> np.ndarray:
+    """The pool-level set-attention head (``POOL_HEAD_PATH``); see pool_head.py."""
+    from pool_head import score_round
+
+    return score_round(r)
+
+
 RULES = {
     "greedy": greedy,
     "EI": ei,
@@ -197,4 +206,5 @@ RULES = {
     "TS": thompson,
     "PTop": p_top,
     "Head": head,
+    "PoolHead": pool_head,
 }

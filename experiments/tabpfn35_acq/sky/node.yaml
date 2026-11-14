@@ -20,6 +20,7 @@ setup: |
   uv pip install olymp --no-deps
   uv pip install tabpfn==9.2.0
   mkdir -p $TABPFN_MODEL_CACHE_DIR
-  test -f $TABPFN_MODEL_CACHE_DIR/tabpfn-v3.5-20260909.safetensors || \
-    gcloud storage cp $BUCKET/weights/tabpfn-v3.5-20260909.safetensors $TABPFN_MODEL_CACHE_DIR/
+  for w in tabpfn-v3.5-20260909.safetensors tabpfn-v3-regressor-v3_default.ckpt; do
+    test -f $TABPFN_MODEL_CACHE_DIR/$w || gcloud storage cp $BUCKET/weights/$w $TABPFN_MODEL_CACHE_DIR/
+  done
   .venv/bin/python -c "import tabpfn, torch; print(tabpfn.__version__, torch.__version__, torch.cuda.is_available())"
