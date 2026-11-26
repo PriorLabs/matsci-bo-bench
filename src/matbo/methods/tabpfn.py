@@ -9,6 +9,7 @@ returns with ``predict(output_type="full")``; see :mod:`matbo.methods.tabpfn_poi
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -31,10 +32,7 @@ class TabPFNSurrogate:
         from tabpfn import TabPFNRegressor
         from tabpfn.constants import ModelVersion
 
-        # Pinned to TabPFN-3, the model behind the recorded traces; newer
-        # tabpfn releases default to a different checkpoint.
-        return TabPFNRegressor.create_default_for_version(
-            ModelVersion.V3,
+        kwargs: dict[str, Any] = dict(
             n_estimators=self.n_estimators,
             device=self.device,
             random_state=seed,
@@ -42,6 +40,17 @@ class TabPFNSurrogate:
             # None lets TabPFN infer categorical columns itself.
             categorical_features_indices=None,
         )
+        model_path = os.environ.get("MATBO_TABPFN_MODEL_PATH")
+        if model_path:
+            # A checkpoint file that carries its own inference config, such as an
+            # internal TabPFN-4 release; its architecture must be registered first.
+            import architectures
+
+            architectures.discover_and_register_architectures()
+            return TabPFNRegressor(model_path=model_path, **kwargs)
+        # Pinned to TabPFN-3, the model behind the recorded traces; newer
+        # tabpfn releases default to a different checkpoint.
+        return TabPFNRegressor.create_default_for_version(ModelVersion.V3, **kwargs)
 
     def fit(self, req: ScoreRequest) -> Posterior:
         # A fresh regressor per round. tabpfn_points caches the round's single
